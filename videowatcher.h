@@ -62,7 +62,11 @@ private:
     void updateUi();
     void saveLastPosition();
     void loadLastPosition();
+    void toggleFullscreen();
+
+    bool handleKey(QKeyEvent *e);
 protected:
+    bool eventFilter(QObject *obj, QEvent *event) override;
     void keyPressEvent(QKeyEvent *e) override;
 };
 

@@ -118,6 +118,7 @@ void VideoWatcher::parseHtml(const QString &html)
     m_WebView->hide();
     m_VideoWidget->show();
     m_VideoWidget->setFocus();
+    m_VideoWidget->installEventFilter(this);
     loadLastPosition();
     playCurrent();
 }
@@ -192,17 +193,60 @@ void VideoWatcher::loadLastPosition()
     if(idx >= 0) m_CurrentIndex = idx;
 }
 
-void VideoWatcher::keyPressEvent(QKeyEvent *e)
+void VideoWatcher::toggleFullscreen()
+{
+    if(m_VideoWidget->isFullScreen())
+    {
+        m_VideoWidget->setParent(this);
+        m_VideoWidget->showNormal();
+        layout()->addWidget(m_VideoWidget);
+        m_VideoWidget->setFocus();
+    }
+    else
+    {
+        m_VideoWidget->setParent(nullptr);
+        m_VideoWidget->setWindowFlag(Qt::Window);
+        m_VideoWidget->showFullScreen();
+    }
+}
+
+bool VideoWatcher::handleKey(QKeyEvent *e)
 {
     switch(e->key())
     {
-    case Qt::Key_M:           m_Player->setMuted(!m_Player->isMuted()); break;
-    case Qt::Key_Space:       e->accept(); m_Player->state()==QMediaPlayer::PlayingState?m_Player->pause():m_Player->play(); break;
+    case Qt::Key_M: m_Player->setMuted(!m_Player->isMuted()); return true;
+    case Qt::Key_Space:
+        m_Player->state() == QMediaPlayer::PlayingState ? m_Player->pause() : m_Player->play(); return true;
     case Qt::Key_N:
     case Qt::Key_Return:
-    case Qt::Key_Enter:       playNext(); break;
-    case Qt::Key_P:           playPrevious(); break;
-    case Qt::Key_F:           isFullScreen()?showNormal():showFullScreen(); break;
-    default: QWidget::keyPressEvent(e);
+    case Qt::Key_Enter: playNext(); return true;
+    case Qt::Key_P: playPrevious(); return true;
+    case Qt::Key_F: toggleFullscreen(); return true;
+    case Qt::Key_Escape:
+        if(m_VideoWidget->isFullScreen()) toggleFullscreen();
+        return true;
+    default: return false;
     }
+}
+
+bool VideoWatcher::eventFilter(QObject *obj, QEvent *event)
+{
+    if(obj == m_VideoWidget && event->type() == QEvent::MouseButtonDblClick)
+    {
+        toggleFullscreen();
+        return true;
+    }
+
+    if(event->type() == QEvent::KeyPress)
+    {
+        return handleKey(static_cast<QKeyEvent*>(event));
+    }
+
+    return QWidget::eventFilter(obj, event);
+}
+
+void VideoWatcher::keyPressEvent(QKeyEvent *e)
+{
+    if(!handleKey(e))
+        QWidget::keyPressEvent(e);
 }
