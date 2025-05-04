@@ -28,15 +28,13 @@ void VideoWatcher::createUi()
     m_PrevBtn->setEnabled(false);
     m_NextBtn->setEnabled(false);
 
-    auto *topLayout = new QHBoxLayout;
-    topLayout->addWidget(m_UrlInput);
-    topLayout->addWidget(m_WatchAllBtn);
-    topLayout->addWidget(m_LoadingLabel);
-    topLayout->addWidget(m_PrevBtn);
-    topLayout->addWidget(m_NextBtn);
-    topLayout->addWidget(m_CountLabel);
-
     m_WebView = new QWebEngineView;
+    m_WebView->setHtml(R"(
+        <html><body style='font-family:sans-serif;padding:2em;color:#888'>
+        Paste a thread URL above and click <b>Watch All Videos</b>.<br><br>
+        Any Cloudflare or CAPTCHA page will appear here before videos are extracted.
+        </body></html>
+    )");
     m_VideoWidget = new QVideoWidget;
     m_VideoWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     m_VideoWidget->hide();
@@ -44,9 +42,22 @@ void VideoWatcher::createUi()
     m_Player = new QMediaPlayer(this);
     m_Player->setVideoOutput(m_VideoWidget);
 
+    auto *topBox = new QWidget;
+    auto *topLayout = new QHBoxLayout(topBox);
+    topLayout->setContentsMargins(4, 4, 4, 4);
+    topLayout->setSpacing(4);
+    topLayout->addWidget(m_UrlInput);
+    topLayout->addWidget(m_WatchAllBtn);
+    topLayout->addWidget(m_LoadingLabel);
+    topLayout->addWidget(m_PrevBtn);
+    topLayout->addWidget(m_NextBtn);
+    topLayout->addWidget(m_CountLabel);
+
     auto *mainLayout = new QVBoxLayout(this);
-    mainLayout->addLayout(topLayout);
-    mainLayout->addWidget(m_WebView);
+    mainLayout->setContentsMargins(0, 0, 0, 0);
+    mainLayout->setSpacing(0);
+    mainLayout->addWidget(topBox, 0, Qt::AlignTop);
+    mainLayout->addWidget(m_WebView, 1);
     mainLayout->addWidget(m_VideoWidget);
     setLayout(mainLayout);
 }
@@ -109,6 +120,11 @@ void VideoWatcher::parseHtml(const QString &html)
 
     if(m_VideoUrls.isEmpty())
     {
+        if(m_First)
+        {
+            m_First = false;
+            return;
+        }
         m_LoadingLabel->setText("No videos found – maybe still on CAPTCHA?");
         return;
     }

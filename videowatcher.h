@@ -48,6 +48,8 @@ private:
     PlayMode        m_PlayMode{PlayMode::Forward};
     QSettings       m_Settings;
 
+    bool m_First = true;
+
     // ---------------------------------------------------------------------
 
     void createUi();
