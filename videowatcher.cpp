@@ -117,6 +117,7 @@ void VideoWatcher::parseHtml(const QString &html)
     m_LoadingLabel->clear();
     m_WebView->hide();
     m_VideoWidget->show();
+    m_VideoWidget->setFocus();
     loadLastPosition();
     playCurrent();
 }
