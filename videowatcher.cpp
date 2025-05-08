@@ -209,6 +209,13 @@ void VideoWatcher::playCurrent()
             m_GifLabel->hide();
 
             m_GifMovie = new QMovie(reply, QByteArray(), this);
+            connect(m_GifMovie, &QMovie::frameChanged, this, [this](int frame)
+            {
+                if(m_GifMovie && frame == m_GifMovie->frameCount() - 1)
+                {
+                    QTimer::singleShot(0, this, [this] { playNext(); });
+                }
+            });
             reply->setParent(m_GifMovie); // QMovie takes ownership
             m_GifMovie->setCacheMode(QMovie::CacheAll);
             m_GifLabel->setMovie(m_GifMovie);
