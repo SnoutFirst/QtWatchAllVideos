@@ -47,6 +47,7 @@ private:
     QMediaPlayer   *m_Player{};
     QLabel         *m_GifLabel{};
     QMovie         *m_GifMovie = nullptr;
+    QPixmap        m_GifCurrentFrame{};
     QNetworkAccessManager m_Nam;
 
     // State
@@ -74,9 +75,11 @@ private:
     void toggleFullscreen();
 
     bool handleKey(QKeyEvent *e);
+    void scaleAndPresentGifCurrentFrame();
 protected:
     bool eventFilter(QObject *obj, QEvent *event) override;
     void keyPressEvent(QKeyEvent *e) override;
+    void resizeEvent(QResizeEvent *event) override;
 };
 
 #endif // VIDEOWATCHER_H

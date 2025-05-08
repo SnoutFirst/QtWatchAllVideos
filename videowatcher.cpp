@@ -163,7 +163,14 @@ void VideoWatcher::transformVideoList()
         std::shuffle(m_VideoUrls.begin(), m_VideoUrls.end(), *QRandomGenerator::global());
     }
 }
-
+void VideoWatcher::scaleAndPresentGifCurrentFrame()
+{
+    if(!m_GifCurrentFrame.isNull() && m_GifLabel->isVisible())
+    {
+        QPixmap scaled = m_GifCurrentFrame.scaled(m_GifLabel->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation );
+        m_GifLabel->setPixmap(scaled);
+    }
+}
 void VideoWatcher::playCurrent()
 {
     if(m_CurrentIndex < 0 || m_CurrentIndex >= m_VideoUrls.size()) return;
@@ -220,6 +227,17 @@ void VideoWatcher::playCurrent()
             m_GifMovie->setCacheMode(QMovie::CacheAll);
             m_GifLabel->setMovie(m_GifMovie);
             m_GifLabel->show();
+            connect(m_GifMovie, &QMovie::frameChanged, this, [this](int frame)
+            {
+                if(!m_GifMovie)
+                    return;
+                m_GifCurrentFrame = m_GifMovie->currentPixmap();
+                scaleAndPresentGifCurrentFrame();
+                if(frame == m_GifMovie->frameCount() - 1)
+                {
+                    QTimer::singleShot(0, this, [this]() { playNext(); });
+                }
+            });
             m_GifMovie->start();
         });
     }
@@ -364,4 +382,9 @@ void VideoWatcher::keyPressEvent(QKeyEvent *e)
 {
     if(!handleKey(e))
         QWidget::keyPressEvent(e);
+}
+void VideoWatcher::resizeEvent(QResizeEvent *event)
+{
+    scaleAndPresentGifCurrentFrame();
+    QWidget::resizeEvent(event);
 }
