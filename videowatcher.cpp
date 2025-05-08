@@ -220,14 +220,21 @@ void VideoWatcher::playCurrent()
             m_GifMovie->setCacheMode(QMovie::CacheAll);
             m_GifLabel->setMovie(m_GifMovie);
             m_GifLabel->show();
-            connect(m_GifMovie, &QMovie::frameChanged, this, [this](int frame)
+            bool first = true;
+            connect(m_GifMovie, &QMovie::frameChanged, this, [this, &first](int frame)
             {
                 if(!m_GifMovie)
                     return;
                 m_GifCurrentFrame = m_GifMovie->currentPixmap();
                 scaleAndPresentGifCurrentFrame();
-                if(frame == m_GifMovie->frameCount() - 1)
+                if(frame == 0)
                 {
+                    if(first)
+                    {
+                        //frameCount() is 0 for the entire first loop (maybe only for certain gif types?), so we need this hack to detect right after first loop. TODO: don't show the very first frame twice xD
+                        first = false;
+                        return;
+                    }
                     playNext();
                 }
             });
