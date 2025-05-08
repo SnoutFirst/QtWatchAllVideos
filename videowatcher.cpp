@@ -1,5 +1,11 @@
 #include "videowatcher.h"
 
+#include <QMovie>
+#include <QLabel>
+#include <QNetworkReply>
+#include <QWebEngineProfile>
+#include <QWebEngineCookieStore>
+
 VideoWatcher::VideoWatcher(QWidget *parent)
     : QWidget(parent),
       m_Settings(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/watcher.ini", QSettings::IniFormat)
@@ -39,6 +45,12 @@ void VideoWatcher::createUi()
     m_VideoWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     m_VideoWidget->hide();
 
+    m_GifLabel = new QLabel;
+    m_GifLabel->setAlignment(Qt::AlignCenter);
+    m_GifLabel->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+    m_GifLabel->setStyleSheet("background:black");
+    m_GifLabel->hide();
+
     m_Player = new QMediaPlayer(this);
     m_Player->setVideoOutput(m_VideoWidget);
 
@@ -59,6 +71,7 @@ void VideoWatcher::createUi()
     mainLayout->addWidget(topBox, 0, Qt::AlignTop);
     mainLayout->addWidget(m_WebView, 1);
     mainLayout->addWidget(m_VideoWidget);
+    mainLayout->addWidget(m_GifLabel);
     setLayout(mainLayout);
 }
 
@@ -97,7 +110,7 @@ void VideoWatcher::onPageLoaded(bool ok)
 
 void VideoWatcher::parseHtml(const QString &html)
 {
-    static const QStringList exts{ "webm","mp4","wmv","avi","mov","mkv","flv","ogg","m4v","mpg","mpeg","3gp","f4v","swf","asf","rm","vob","ts","m2v","divx" };
+    static const QStringList exts{ "webm","mp4","wmv","avi","mov","mkv","flv","ogg","m4v","mpg","mpeg","3gp","f4v","swf","asf","rm","vob","ts","m2v","divx","gif" };
 
     QRegularExpression hrefRe(QString(R"raw(<a[^>]+href\s*=\s*["']([^"']+\.(?:%1))["'])raw").arg(exts.join('|')), QRegularExpression::CaseInsensitiveOption);
     QRegularExpression videoSrcRe(QString(R"raw(<video[^>]+src\s*=\s*["']([^"']+\.(?:%1))["'])raw").arg(exts.join('|')), QRegularExpression::CaseInsensitiveOption);
@@ -157,18 +170,78 @@ void VideoWatcher::playCurrent()
 
     QUrl baseUrl = m_WebView->url();
     QUrl resolved = baseUrl.resolved(QUrl(m_VideoUrls[m_CurrentIndex]));
+    QString ext = resolved.fileName().section('.',-1).toLower();
+
+    if(ext == "gif")
+    {
+        if(m_GifMovie)
+        {
+            m_GifMovie->stop();
+            delete m_GifMovie;
+            m_GifMovie = nullptr;
+        }
+        m_Player->stop();
+        m_VideoWidget->hide();
+
+        QNetworkRequest req(resolved);
+        req.setRawHeader("User-Agent", m_WebView->page()->profile()->httpUserAgent().toUtf8());
+        //req.setRawHeader("Cookie", cookieHeader);
+        req.setRawHeader("Referer", m_WebView->url().toString().toUtf8());
+
+        QNetworkReply *reply = m_Nam.get(req);
+        connect(reply, &QNetworkReply::finished, this, [this, reply]
+        {
+            if(reply->error() != QNetworkReply::NoError)
+            {
+                qDebug() << "GIF load failed:" << reply->errorString();
+                reply->deleteLater();
+                return;
+            }
+
+            if(m_GifMovie)
+            {
+                m_GifMovie->stop();
+                delete m_GifMovie;
+                m_GifMovie = nullptr;
+            }
+            m_Player->stop();
+            m_VideoWidget->hide();
+            m_GifLabel->hide();
+
+            m_GifMovie = new QMovie(reply, QByteArray(), this);
+            reply->setParent(m_GifMovie); // QMovie takes ownership
+            m_GifMovie->setCacheMode(QMovie::CacheAll);
+            m_GifLabel->setMovie(m_GifMovie);
+            m_GifLabel->show();
+            m_GifMovie->start();
+        });
+    }
+    else
+    {
+        m_GifLabel->hide();
+        if(m_GifMovie)
+        {
+            m_GifMovie->stop();
+            delete m_GifMovie;
+            m_GifMovie = nullptr;
+        }
+
 #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
-    m_Player->setSource(resolved);
+        m_Player->setSource(resolved);
 #else
-    m_Player->setMedia(resolved);
+        m_Player->setMedia(resolved);
 #endif
-    m_Player->play();
+        m_VideoWidget->show();
+        m_Player->play();
+    }
     saveLastPosition();
     updateUi();
 }
 
 void VideoWatcher::playNext()
 {
+    if(m_GifMovie)
+        m_GifMovie->stop();
     if(m_CurrentIndex + 1 < m_VideoUrls.size())
     {
         ++m_CurrentIndex;
@@ -178,6 +251,8 @@ void VideoWatcher::playNext()
 
 void VideoWatcher::playPrevious()
 {
+    if(m_GifMovie)
+        m_GifMovie->stop();
     if(m_CurrentIndex > 0)
     {
         --m_CurrentIndex;
@@ -211,19 +286,36 @@ void VideoWatcher::loadLastPosition()
 
 void VideoWatcher::toggleFullscreen()
 {
+    if(m_GifLabel->isFullScreen())
+    {
+        m_GifLabel->setParent(this);
+        m_GifLabel->showNormal();
+        layout()->addWidget(m_GifLabel);
+        m_GifLabel->setFocus();
+        return;
+    }
+
     if(m_VideoWidget->isFullScreen())
     {
         m_VideoWidget->setParent(this);
         m_VideoWidget->showNormal();
         layout()->addWidget(m_VideoWidget);
         m_VideoWidget->setFocus();
+        return;
     }
-    else
+
+    if(m_GifLabel->isVisible())
     {
-        m_VideoWidget->setParent(nullptr);
-        m_VideoWidget->setWindowFlag(Qt::Window);
-        m_VideoWidget->showFullScreen();
+        m_GifLabel->setParent(nullptr);
+        m_GifLabel->setWindowFlag(Qt::Window);
+        m_GifLabel->showFullScreen();
+        return;
     }
+
+    //else: videoWidget->isVisible()
+    m_VideoWidget->setParent(nullptr);
+    m_VideoWidget->setWindowFlag(Qt::Window);
+    m_VideoWidget->showFullScreen();
 }
 
 bool VideoWatcher::handleKey(QKeyEvent *e)

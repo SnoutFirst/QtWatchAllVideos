@@ -20,6 +20,10 @@
 #include <QKeyEvent>
 #include <QRandomGenerator>
 #include <QStandardPaths>
+#include <QNetworkAccessManager>
+
+class QMovie;
+class QLabel;
 
 class VideoWatcher final : public QWidget
 {
@@ -41,6 +45,9 @@ private:
     QWebEngineView *m_WebView{};
     QVideoWidget   *m_VideoWidget{};
     QMediaPlayer   *m_Player{};
+    QLabel         *m_GifLabel{};
+    QMovie         *m_GifMovie = nullptr;
+    QNetworkAccessManager m_Nam;
 
     // State
     QStringList     m_VideoUrls;
