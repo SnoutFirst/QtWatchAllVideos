@@ -6,7 +6,6 @@ int main(int argc,char **argv)
 {
     QApplication app(argc,argv);
     VideoWatcher w;
-    w.resize(1024,768);
-    w.show();
+    w.showMaximized();
     return app.exec();
 }
