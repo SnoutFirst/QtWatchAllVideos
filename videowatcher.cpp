@@ -297,18 +297,46 @@ void VideoWatcher::updateUi()
 void VideoWatcher::saveLastPosition()
 {
     if(m_PlayMode != PlayMode::Forward) return;
-    QString key = "last:" + m_WebView->url().toString(QUrl::RemoveFragment|QUrl::StripTrailingSlash);
-    m_Settings.setValue(key, m_VideoUrls[m_CurrentIndex]);
+    QString url = m_WebView->url().toString(QUrl::RemoveFragment|QUrl::StripTrailingSlash);
+    QVariantMap value;
+    value["videoUrl"] = m_VideoUrls[m_CurrentIndex];
+    value["date"] = QDateTime::currentSecsSinceEpoch(); // Add this line
+    m_Settings.setValue("last:" + url, value);
+}
+
+void VideoWatcher::maybeCleanupOldState()
+{
+    if(QRandomGenerator::global()->bounded(100) != 0)
+        return; //1% chance
+
+    const qint64 oneYearAgo = QDateTime::currentSecsSinceEpoch() - (60LL * 60 * 24 * 365);
+
+    for(const QString &key : m_Settings.allKeys())
+    {
+        if(key.startsWith("last:"))
+        {
+            QVariantMap value = m_Settings.value(key).toMap();
+            if(value.contains("date"))
+            {
+                qint64 date = value["date"].toLongLong(); //if the conversion fails, cleanup that entry :-P (date will be 0)
+                if(date < oneYearAgo)
+                    m_Settings.remove(key);
+            }
+        }
+    }
 }
 
 void VideoWatcher::loadLastPosition()
 {
     if(m_PlayMode != PlayMode::Forward) return;
+    maybeCleanupOldState();
     QString key = "last:" + m_WebView->url().toString(QUrl::RemoveFragment|QUrl::StripTrailingSlash);
-    QString last = m_Settings.value(key).toString();
-    if(last.isEmpty()) return;
-    int idx = m_VideoUrls.indexOf(last);
-    if(idx >= 0) m_CurrentIndex = idx;
+    QVariantMap value = m_Settings.value(key).toMap();
+    if(!value.contains("videoUrl"))
+        return;
+    int index = m_VideoUrls.indexOf(value["videoUrl"].toString());
+    if(index >= 0)
+        m_CurrentIndex = index;
 }
 
 void VideoWatcher::toggleFullscreenWidget(QWidget *widget)

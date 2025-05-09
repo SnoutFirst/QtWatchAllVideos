@@ -78,6 +78,7 @@ private:
     void scaleAndPresentGifCurrentFrame();
     void toggleFullscreenWidget(QWidget *widget);
     bool eitherIsFullscreen();
+    void maybeCleanupOldState();
 protected:
     bool eventFilter(QObject *obj, QEvent *event) override;
     void keyPressEvent(QKeyEvent *e) override;
