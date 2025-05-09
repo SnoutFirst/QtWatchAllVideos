@@ -99,12 +99,19 @@ void VideoWatcher::connectSignals()
 
 void VideoWatcher::startLoad()
 {
+    QUrl url = QUrl::fromUserInput(m_UrlInput->text().trimmed());
+    if(!url.isValid())
+    {
+        if(!url.isEmpty())
+            m_LoadingLabel->setText("Invalid URL");
+        return;
+    }
     m_LoadingLabel->setText("Loading...");
     m_VideoWidget->hide();
     m_WebView->show();
     m_VideoUrls.clear();
     m_CurrentIndex = 0;
-    m_WebView->load(QUrl::fromUserInput(m_UrlInput->text().trimmed()));
+    m_WebView->load(url);
 }
 
 void VideoWatcher::onPageLoaded(bool ok)
