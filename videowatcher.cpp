@@ -24,8 +24,8 @@ void VideoWatcher::createUi()
     m_WatchAllBtn->setPopupMode(QToolButton::MenuButtonPopup);
 
     QMenu *menu = new QMenu(this);
-    menu->addAction("Shuffled", this, [this]{m_PlayMode = PlayMode::Shuffled; startLoad();});
-    menu->addAction("Reversed", this, [this]{m_PlayMode = PlayMode::Reversed; startLoad();});
+    menu->addAction("Shuffled", this, [this]{m_PlayMode = PlayMode::Shuffled; startLoad();})->setShortcut(QKeySequence("Ctrl+S"));
+    menu->addAction("Reversed", this, [this]{m_PlayMode = PlayMode::Reversed; startLoad();})->setShortcut(QKeySequence("Ctrl+R"));
     m_WatchAllBtn->setMenu(menu);
 
     m_LoadingLabel = new QLabel;
