@@ -83,6 +83,8 @@ protected:
     bool eventFilter(QObject *obj, QEvent *event) override;
     void keyPressEvent(QKeyEvent *e) override;
     void resizeEvent(QResizeEvent *event) override;
+private slots:
+    void watchAllVideosForwards();
 };
 
 #endif // VIDEOWATCHER_H

@@ -77,9 +77,16 @@ void VideoWatcher::createUi()
     setLayout(mainLayout);
 }
 
+void VideoWatcher::watchAllVideosForwards()
+{
+    m_PlayMode = PlayMode::Forward;
+    startLoad();
+}
+
 void VideoWatcher::connectSignals()
 {
-    connect(m_WatchAllBtn, &QToolButton::clicked, this, [this]{m_PlayMode = PlayMode::Forward; startLoad();});
+    connect(m_UrlInput, &QLineEdit::returnPressed, this, &VideoWatcher::watchAllVideosForwards);
+    connect(m_WatchAllBtn, &QToolButton::clicked, this, &VideoWatcher::watchAllVideosForwards);
     connect(m_PrevBtn, &QPushButton::clicked, this, &VideoWatcher::playPrevious);
     connect(m_NextBtn, &QPushButton::clicked, this, &VideoWatcher::playNext);
 
@@ -383,7 +390,9 @@ bool VideoWatcher::handleKey(QKeyEvent *e)
     case Qt::Key_Space:
         m_Player->state() == QMediaPlayer::PlayingState ? m_Player->pause() : m_Player->play(); return true;
     case Qt::Key_N:
+        [[fallthrough]];
     case Qt::Key_Return:
+        [[fallthrough]];
     case Qt::Key_Enter: playNext(); return true;
     case Qt::Key_P: playPrevious(); return true;
     case Qt::Key_F: toggleFullscreen(); return true;
