@@ -76,6 +76,8 @@ private:
 
     bool handleKey(QKeyEvent *e);
     void scaleAndPresentGifCurrentFrame();
+    void toggleFullscreenWidget(QWidget *widget);
+    bool eitherIsFullscreen();
 protected:
     bool eventFilter(QObject *obj, QEvent *event) override;
     void keyPressEvent(QKeyEvent *e) override;

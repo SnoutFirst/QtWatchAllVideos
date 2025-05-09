@@ -5,6 +5,8 @@
 #include <QNetworkReply>
 #include <QWebEngineProfile>
 #include <QWebEngineCookieStore>
+#include <QWindow>
+#include <QScreen>
 
 VideoWatcher::VideoWatcher(QWidget *parent)
     : QWidget(parent),
@@ -309,38 +311,40 @@ void VideoWatcher::loadLastPosition()
     if(idx >= 0) m_CurrentIndex = idx;
 }
 
+void VideoWatcher::toggleFullscreenWidget(QWidget *widget)
+{
+    if(widget->isFullScreen())
+    {
+        widget->setParent(this);
+        widget->showNormal();
+        layout()->addWidget(widget);
+        widget->setFocus();
+    }
+    else //go fullscreen
+    {
+        widget->setParent(nullptr);
+        widget->setWindowFlag(Qt::Window);
+        QScreen *currentScreen = windowHandle()->screen();
+        widget->windowHandle()->setScreen(currentScreen); //fullscreen on current screen/monitor. without this line it will fullscreen on primary screen/monitor always (since we just de-parented)
+        widget->move(currentScreen->geometry().topLeft());
+        widget->resize(currentScreen->size());
+        widget->showFullScreen();
+    }
+}
+
 void VideoWatcher::toggleFullscreen()
 {
-    if(m_GifLabel->isFullScreen())
-    {
-        m_GifLabel->setParent(this);
-        m_GifLabel->showNormal();
-        layout()->addWidget(m_GifLabel);
-        m_GifLabel->setFocus();
-        return;
-    }
-
-    if(m_VideoWidget->isFullScreen())
-    {
-        m_VideoWidget->setParent(this);
-        m_VideoWidget->showNormal();
-        layout()->addWidget(m_VideoWidget);
-        m_VideoWidget->setFocus();
-        return;
-    }
-
+    QWidget *current;
     if(m_GifLabel->isVisible())
-    {
-        m_GifLabel->setParent(nullptr);
-        m_GifLabel->setWindowFlag(Qt::Window);
-        m_GifLabel->showFullScreen();
-        return;
-    }
+        current = m_GifLabel;
+    else //videoWidget->isVisible()
+        current = m_VideoWidget;
+    toggleFullscreenWidget(current);
+}
 
-    //else: videoWidget->isVisible()
-    m_VideoWidget->setParent(nullptr);
-    m_VideoWidget->setWindowFlag(Qt::Window);
-    m_VideoWidget->showFullScreen();
+bool VideoWatcher::eitherIsFullscreen()
+{
+    return m_VideoWidget->isFullScreen() || m_GifLabel->isFullScreen();
 }
 
 bool VideoWatcher::handleKey(QKeyEvent *e)
@@ -356,7 +360,8 @@ bool VideoWatcher::handleKey(QKeyEvent *e)
     case Qt::Key_P: playPrevious(); return true;
     case Qt::Key_F: toggleFullscreen(); return true;
     case Qt::Key_Escape:
-        if(m_VideoWidget->isFullScreen()) toggleFullscreen();
+        if(eitherIsFullscreen())
+            toggleFullscreen();
         return true;
     default: return false;
     }
