@@ -15,14 +15,14 @@ ControlsPanel::ControlsPanel(QWidget *parent)
     lay->setContentsMargins(12,6,12,6);
 
     m_PlayPauseBtn = new QPushButton();
-    m_PlayPauseBtn->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
+    m_PlayPauseBtn->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
     QSize iconSize(32, 32);
     m_PlayPauseBtn->setIconSize(iconSize);
     m_PlayPauseBtn->setFixedSize(iconSize);
     m_PlayPauseBtn->setFlat(false);
     m_PlayPauseBtn->setStyleSheet(QStringLiteral(
         "QPushButton {"
-        "  background-color: rgba(0,0,0,128);"
+        "  background-color: rgba(0,0,0,90);"
         "  color: white;"
         "  border: none;"
         "  border-radius: %1px;"
@@ -35,4 +35,16 @@ ControlsPanel::ControlsPanel(QWidget *parent)
     lay->addStretch();
 
     connect(m_PlayPauseBtn,&QPushButton::clicked,this,&ControlsPanel::playPauseToggled);
+    connect(m_PlayPauseBtn, &QPushButton::clicked, this, [this, playIcon = false]() mutable
+    {
+        if(playIcon)
+        {
+            m_PlayPauseBtn->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
+        }
+        else
+        {
+            m_PlayPauseBtn->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
+        }
+        playIcon = !playIcon;
+    });
 }
