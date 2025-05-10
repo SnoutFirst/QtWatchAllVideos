@@ -117,6 +117,7 @@ protected:
     void resizeEvent(QResizeEvent *event) override;
 private slots:
     void watchAllVideosForwards();
+    void handlePlayPauseToggled();
 };
 
 #endif // VIDEOWATCHER_H

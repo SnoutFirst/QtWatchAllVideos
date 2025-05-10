@@ -116,6 +116,8 @@ void VideoWatcher::connectSignals()
     {
         if(s == QMediaPlayer::EndOfMedia) playNext();
     });
+
+    connect(m_ControlsPanel, &ControlsPanel::playPauseToggled, this, &VideoWatcher::handlePlayPauseToggled);
 }
 
 void VideoWatcher::startLoad()
@@ -477,4 +479,36 @@ void VideoWatcher::resizeGraphicsItems()
     const int panelHeight = m_ControlsPanel->sizeHint().height();
     m_ControlsPanel->setFixedWidth(viewSize.width());
     m_ControlsPanelProxy->setPos(0, viewSize.height() - panelHeight);
+}
+void VideoWatcher::handlePlayPauseToggled()
+{
+    if(m_GifLabel->isVisible() && m_GifMovie)
+    {
+        switch(m_GifMovie->state())
+        {
+        case QMovie::NotRunning:
+            [[fallthrough]];
+        case QMovie::Paused:
+            m_GifMovie->setPaused(false);
+            break;
+        case QMovie::Running:
+            m_GifMovie->setPaused(true);
+            break;
+        }
+        return;
+    }
+    if(m_VideoGraphicsItem->isVisible() && m_Player)
+    {
+        switch(m_Player->state())
+        {
+        case QMediaPlayer::StoppedState:
+            [[fallthrough]];
+        case QMediaPlayer::PausedState:
+            m_Player->play();
+            break;
+        case QMediaPlayer::PlayingState:
+            m_Player->pause();
+            break;
+        }
+    }
 }
