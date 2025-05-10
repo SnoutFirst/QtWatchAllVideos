@@ -16,17 +16,20 @@ ControlsPanel::ControlsPanel(QWidget *parent)
 
     m_PlayPauseBtn = new QPushButton();
     m_PlayPauseBtn->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
-    m_PlayPauseBtn->setIconSize(QSize(32, 32));
+    QSize iconSize(32, 32);
+    m_PlayPauseBtn->setIconSize(iconSize);
+    m_PlayPauseBtn->setFixedSize(iconSize);
     m_PlayPauseBtn->setFlat(false);
-    m_PlayPauseBtn->setStyleSheet(
+    m_PlayPauseBtn->setStyleSheet(QStringLiteral(
         "QPushButton {"
         "  background-color: rgba(0,0,0,128);"
         "  color: white;"
         "  border: none;"
+        "  border-radius: %1px;"
         "}"
         "QPushButton:hover { background-color: rgba(30,30,30,160); }"
         "QPushButton:pressed { background-color: rgba(0,0,0,200); }"
-    );
+    ).arg(iconSize.width() / 2));
     lay->addStretch();
     lay->addWidget(m_PlayPauseBtn);
     lay->addStretch();
