@@ -238,8 +238,7 @@ void VideoWatcher::playCurrent()
             m_GifMovie->setCacheMode(QMovie::CacheAll);
             m_GifLabel->setMovie(m_GifMovie);
             m_GifLabel->show();
-            bool first = true;
-            connect(m_GifMovie, &QMovie::frameChanged, this, [this, &first](int frame)
+            connect(m_GifMovie, &QMovie::frameChanged, this, [this, first = true](int frame) mutable
             {
                 if(!m_GifMovie)
                     return;
