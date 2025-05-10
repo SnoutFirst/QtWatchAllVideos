@@ -64,7 +64,11 @@ void VideoWatcher::createUi()
     m_Player = new QMediaPlayer(this);
     m_Player->setVideoOutput(m_VideoGraphicsItem);
 
-    m_GraphicsView = new QGraphicsView(m_GraphicsScene);
+    m_GraphicsView = new MyGraphicsView(m_GraphicsScene);
+    m_GraphicsView->onResized = [this]{ resizeGraphicsItems(); };
+    m_GraphicsView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    m_GraphicsView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    m_GraphicsView->setTransformationAnchor(QGraphicsView::AnchorViewCenter);
     m_GraphicsView->setFrameStyle(QFrame::NoFrame);
     m_GraphicsView->setAlignment(Qt::AlignCenter);
     m_GraphicsView->installEventFilter(this);
@@ -88,8 +92,6 @@ void VideoWatcher::createUi()
     mainLayout->addWidget(m_WebView, 1);
     mainLayout->addWidget(m_GraphicsView, 1);
     setLayout(mainLayout);
-
-    resizeGraphicsItems();
 }
 
 void VideoWatcher::watchAllVideosForwards()
@@ -247,7 +249,6 @@ void VideoWatcher::playCurrent()
             m_GifMovie->setCacheMode(QMovie::CacheAll);
             m_GifLabel->setMovie(m_GifMovie);
             m_GifLabelProxy->show();
-            resizeGraphicsItems();
             connect(m_GifMovie, &QMovie::frameChanged, this, [this, first = true](int frame) mutable
             {
                 if(!m_GifMovie)
@@ -288,7 +289,6 @@ void VideoWatcher::playCurrent()
         m_Player->setMedia(resolved);
 #endif
         m_VideoGraphicsItem->show();
-        resizeGraphicsItems();
         m_Player->play();
     }
     saveLastPosition();
@@ -377,7 +377,6 @@ void VideoWatcher::toggleFullscreenWidget(QWidget *widget)
         widget->showNormal();
         layout()->addWidget(widget);
         widget->setFocus();
-        resizeGraphicsItems();
         return;
     }
 
@@ -397,7 +396,6 @@ void VideoWatcher::toggleFullscreenWidget(QWidget *widget)
     widget->move(currentScreen->geometry().topLeft());
     widget->resize(currentScreen->size());
     widget->showFullScreen();
-    resizeGraphicsItems();
 }
 
 void VideoWatcher::toggleFullscreen()
@@ -456,23 +454,18 @@ void VideoWatcher::keyPressEvent(QKeyEvent *e)
 }
 void VideoWatcher::resizeEvent(QResizeEvent *e)
 {
-    resizeGraphicsItems();
     scaleAndPresentGifCurrentFrame();
     QWidget::resizeEvent(e);
 }
 void VideoWatcher::resizeGraphicsItems()
 {
-    // size of the viewport, i.e. the visible part of the view
     const QSizeF viewSize = m_GraphicsView->viewport()->size();
 
-    // make the scene exactly that big
     m_GraphicsScene->setSceneRect(QRectF(QPointF(0, 0), viewSize));
 
-    // stretch the graphics-video item
     m_VideoGraphicsItem->setPos(0, 0);
     m_VideoGraphicsItem->setSize(viewSize);
 
-    // stretch the GIF QLabel (through its proxy)
     m_GifLabel->resize(viewSize.toSize());
     m_GifLabelProxy->setPos(0, 0);
 }

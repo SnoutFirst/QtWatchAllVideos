@@ -30,6 +30,22 @@
 class QMovie;
 class QLabel;
 
+class MyGraphicsView : public QGraphicsView
+{
+    Q_OBJECT
+public:
+    using QGraphicsView::QGraphicsView;
+    std::function<void()> onResized;
+
+protected:
+    void resizeEvent(QResizeEvent *e) override
+    {
+        QGraphicsView::resizeEvent(e);
+        if(onResized)
+            onResized();
+    }
+};
+
 class VideoWatcher final : public QWidget
 {
     Q_OBJECT
@@ -49,7 +65,7 @@ private:
     QLabel         *m_CountLabel{};
     QWebEngineView *m_WebView{};
     QGraphicsScene        *m_GraphicsScene;
-    QGraphicsView         *m_GraphicsView;
+    MyGraphicsView               *m_GraphicsView;
     QGraphicsVideoItem    *m_VideoGraphicsItem;
     QGraphicsProxyWidget  *m_GifLabelProxy;
 
