@@ -27,6 +27,8 @@
 #include <QGraphicsVideoItem>
 #include <QGraphicsProxyWidget>
 
+#include "controlspanel.h"
+
 class QMovie;
 class QLabel;
 
@@ -68,6 +70,9 @@ private:
     MyGraphicsView               *m_GraphicsView;
     QGraphicsVideoItem    *m_VideoGraphicsItem;
     QGraphicsProxyWidget  *m_GifLabelProxy;
+
+    ControlsPanel          *m_ControlsPanel{};
+    QGraphicsProxyWidget   *m_ControlsPanelProxy{};
 
     QMediaPlayer   *m_Player{};
     QLabel         *m_GifLabel{};

@@ -58,6 +58,10 @@ void VideoWatcher::createUi()
     m_GraphicsScene->addItem(m_VideoGraphicsItem);
     m_GifLabelProxy  = m_GraphicsScene->addWidget(m_GifLabel);
 
+    m_ControlsPanel      = new ControlsPanel;
+    m_ControlsPanelProxy = m_GraphicsScene->addWidget(m_ControlsPanel);
+    m_ControlsPanelProxy->setZValue(999);
+
     m_VideoGraphicsItem->setVisible(false);
     m_GifLabelProxy ->setVisible(false);
 
@@ -292,6 +296,7 @@ void VideoWatcher::playCurrent()
         m_Player->play();
     }
     saveLastPosition();
+    m_ControlsPanelProxy->setVisible(true);
     updateUi();
 }
 
@@ -468,4 +473,8 @@ void VideoWatcher::resizeGraphicsItems()
 
     m_GifLabel->resize(viewSize.toSize());
     m_GifLabelProxy->setPos(0, 0);
+
+    const int panelHeight = m_ControlsPanel->sizeHint().height();
+    m_ControlsPanel->setFixedWidth(viewSize.width());
+    m_ControlsPanelProxy->setPos(0, viewSize.height() - panelHeight);
 }

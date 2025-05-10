@@ -30,6 +30,7 @@ find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Widgets Network Multimedia Multime
 set(PROJECT_SOURCES
         main.cpp
         videowatcher.h videowatcher.cpp
+        controlspanel.h controlspanel.cpp
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
