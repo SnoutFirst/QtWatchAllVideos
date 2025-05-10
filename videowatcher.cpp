@@ -49,7 +49,6 @@ void VideoWatcher::createUi()
     m_GifLabel = new QLabel;
     m_GifLabel->setAlignment(Qt::AlignCenter);
     m_GifLabel->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
-    m_GifLabel->setStyleSheet("background:black");
 
     m_Player = new QMediaPlayer(this);
 
@@ -96,6 +95,10 @@ void VideoWatcher::createUi()
     mainLayout->addWidget(m_WebView, 1);
     mainLayout->addWidget(m_GraphicsView, 1);
     setLayout(mainLayout);
+
+    m_GifLabel->setStyleSheet("background:black");
+    m_GraphicsScene->setBackgroundBrush(Qt::black);
+    m_GraphicsView->setStyleSheet("background-color: black;");
 }
 
 void VideoWatcher::watchAllVideosForwards()
