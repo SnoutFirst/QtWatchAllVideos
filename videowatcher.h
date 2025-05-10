@@ -21,6 +21,7 @@
 #include <QRandomGenerator>
 #include <QStandardPaths>
 #include <QNetworkAccessManager>
+#include <QElapsedTimer>
 
 class QMovie;
 class QLabel;
@@ -48,6 +49,7 @@ private:
     QLabel         *m_GifLabel{};
     QMovie         *m_GifMovie = nullptr;
     QPixmap        m_GifCurrentFrame{};
+    QElapsedTimer  m_GifElapsedTimer;
     QNetworkAccessManager m_Nam;
 
     // State

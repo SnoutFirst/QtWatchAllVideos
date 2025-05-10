@@ -8,6 +8,8 @@
 #include <QWindow>
 #include <QScreen>
 
+#define MIN_MS_TO_SHOW_GIF_LOOPING_IF_NECESSARY (3 * 1000)
+
 VideoWatcher::VideoWatcher(QWidget *parent)
     : QWidget(parent),
       m_Settings(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/watcher.ini", QSettings::IniFormat)
@@ -251,10 +253,12 @@ void VideoWatcher::playCurrent()
                         first = false;
                         return;
                     }
-                    playNext();
+                    if(m_GifElapsedTimer.elapsed() >= MIN_MS_TO_SHOW_GIF_LOOPING_IF_NECESSARY)
+                        playNext();
                 }
             });
             m_GifMovie->start();
+            m_GifElapsedTimer.restart();
         });
     }
     else
