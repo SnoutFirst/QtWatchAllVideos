@@ -88,6 +88,8 @@ void VideoWatcher::createUi()
     mainLayout->addWidget(m_WebView, 1);
     mainLayout->addWidget(m_GraphicsView, 1);
     setLayout(mainLayout);
+
+    resizeGraphicsItems();
 }
 
 void VideoWatcher::watchAllVideosForwards()
@@ -193,7 +195,7 @@ void VideoWatcher::transformVideoList()
 }
 void VideoWatcher::scaleAndPresentGifCurrentFrame()
 {
-    if(!m_GifCurrentFrame.isNull() && m_GifLabel->isVisible())
+    if(!m_GifCurrentFrame.isNull() && m_GifLabelProxy->isVisible())
     {
         QPixmap scaled = m_GifCurrentFrame.scaled(m_GifLabel->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation );
         m_GifLabel->setPixmap(scaled);
@@ -245,6 +247,7 @@ void VideoWatcher::playCurrent()
             m_GifMovie->setCacheMode(QMovie::CacheAll);
             m_GifLabel->setMovie(m_GifMovie);
             m_GifLabelProxy->show();
+            resizeGraphicsItems();
             connect(m_GifMovie, &QMovie::frameChanged, this, [this, first = true](int frame) mutable
             {
                 if(!m_GifMovie)
@@ -285,6 +288,7 @@ void VideoWatcher::playCurrent()
         m_Player->setMedia(resolved);
 #endif
         m_VideoGraphicsItem->show();
+        resizeGraphicsItems();
         m_Player->play();
     }
     saveLastPosition();
@@ -440,8 +444,25 @@ void VideoWatcher::keyPressEvent(QKeyEvent *e)
     if(!handleKey(e))
         QWidget::keyPressEvent(e);
 }
-void VideoWatcher::resizeEvent(QResizeEvent *event)
+void VideoWatcher::resizeEvent(QResizeEvent *e)
 {
+    resizeGraphicsItems();
     scaleAndPresentGifCurrentFrame();
-    QWidget::resizeEvent(event);
+    QWidget::resizeEvent(e);
+}
+void VideoWatcher::resizeGraphicsItems()
+{
+    // size of the viewport, i.e. the visible part of the view
+    const QSizeF viewSize = m_GraphicsView->viewport()->size();
+
+    // make the scene exactly that big
+    m_GraphicsScene->setSceneRect(QRectF(QPointF(0, 0), viewSize));
+
+    // stretch the graphics-video item
+    m_VideoGraphicsItem->setPos(0, 0);
+    m_VideoGraphicsItem->setSize(viewSize);
+
+    // stretch the GIF QLabel (through its proxy)
+    m_GifLabel->resize(viewSize.toSize());
+    m_GifLabelProxy->setPos(0, 0);
 }
