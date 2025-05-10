@@ -9,10 +9,10 @@ class ControlsPanel : public QWidget
     Q_OBJECT
 public:
     explicit ControlsPanel(QWidget *parent = nullptr);
-
-signals:
-    void playPauseToggled();
-
 private:
     QPushButton *m_PlayPauseBtn{};
+signals:
+    void playPauseToggled();
+public slots:
+    void updatePlayPauseIcon(bool playing);
 };

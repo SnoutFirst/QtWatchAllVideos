@@ -35,16 +35,8 @@ ControlsPanel::ControlsPanel(QWidget *parent)
     lay->addStretch();
 
     connect(m_PlayPauseBtn,&QPushButton::clicked,this,&ControlsPanel::playPauseToggled);
-    connect(m_PlayPauseBtn, &QPushButton::clicked, this, [this, playIcon = false]() mutable
-    {
-        if(playIcon)
-        {
-            m_PlayPauseBtn->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
-        }
-        else
-        {
-            m_PlayPauseBtn->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
-        }
-        playIcon = !playIcon;
-    });
+}
+void ControlsPanel::updatePlayPauseIcon(bool playing)
+{
+    m_PlayPauseBtn->setIcon(style()->standardIcon(playing ? QStyle::SP_MediaPause : QStyle::SP_MediaPlay));
 }

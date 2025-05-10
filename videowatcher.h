@@ -115,6 +115,8 @@ protected:
     bool eventFilter(QObject *obj, QEvent *event) override;
     void keyPressEvent(QKeyEvent *e) override;
     void resizeEvent(QResizeEvent *event) override;
+signals:
+    void playPauseToggleHandled(bool playing);
 private slots:
     void watchAllVideosForwards();
     void handlePlayPauseToggled();

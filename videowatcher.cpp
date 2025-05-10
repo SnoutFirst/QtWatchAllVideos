@@ -118,6 +118,7 @@ void VideoWatcher::connectSignals()
     });
 
     connect(m_ControlsPanel, &ControlsPanel::playPauseToggled, this, &VideoWatcher::handlePlayPauseToggled);
+    connect(this, &VideoWatcher::playPauseToggleHandled, m_ControlsPanel, &ControlsPanel::updatePlayPauseIcon);
 }
 
 void VideoWatcher::startLoad()
@@ -422,7 +423,8 @@ bool VideoWatcher::handleKey(QKeyEvent *e)
     {
     case Qt::Key_M: m_Player->setMuted(!m_Player->isMuted()); return true;
     case Qt::Key_Space:
-        m_Player->state() == QMediaPlayer::PlayingState ? m_Player->pause() : m_Player->play(); return true;
+        handlePlayPauseToggled();
+        return true;
     case Qt::Key_N:
         [[fallthrough]];
     case Qt::Key_Return:
@@ -482,6 +484,7 @@ void VideoWatcher::resizeGraphicsItems()
 }
 void VideoWatcher::handlePlayPauseToggled()
 {
+    bool playing = true;
     if(m_GifLabel->isVisible() && m_GifMovie)
     {
         switch(m_GifMovie->state())
@@ -490,14 +493,15 @@ void VideoWatcher::handlePlayPauseToggled()
             [[fallthrough]];
         case QMovie::Paused:
             m_GifMovie->setPaused(false);
+            playing = true;
             break;
         case QMovie::Running:
             m_GifMovie->setPaused(true);
+            playing = false;
             break;
         }
-        return;
     }
-    if(m_VideoGraphicsItem->isVisible() && m_Player)
+    else if(m_VideoGraphicsItem->isVisible() && m_Player)
     {
         switch(m_Player->state())
         {
@@ -505,10 +509,13 @@ void VideoWatcher::handlePlayPauseToggled()
             [[fallthrough]];
         case QMediaPlayer::PausedState:
             m_Player->play();
+            playing = true;
             break;
         case QMediaPlayer::PlayingState:
             m_Player->pause();
+            playing = false;
             break;
         }
     }
+    emit playPauseToggleHandled(playing);
 }
