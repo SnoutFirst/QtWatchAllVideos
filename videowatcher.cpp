@@ -242,19 +242,21 @@ void VideoWatcher::playCurrent()
             {
                 if(!m_GifMovie)
                     return;
-                m_GifCurrentFrame = m_GifMovie->currentPixmap();
-                scaleAndPresentGifCurrentFrame();
                 if(frame == 0)
                 {
                     if(first)
                     {
-                        //frameCount() is 0 for the entire first loop (maybe only for certain gif types?), so we need this hack to detect right after first loop. TODO: don't show the very first frame twice xD
+                        //frameCount() is 0 for the entire first loop (maybe only for certain gif types?), so we need this hack to detect right after first loop
                         first = false;
-                        return;
                     }
-                    if(m_GifElapsedTimer.elapsed() >= MIN_MS_TO_SHOW_GIF_LOOPING_IF_NECESSARY)
+                    else if(m_GifElapsedTimer.elapsed() >= MIN_MS_TO_SHOW_GIF_LOOPING_IF_NECESSARY)
+                    {
                         playNext();
+                        return; //don't show the first frame twice
+                    }
                 }
+                m_GifCurrentFrame = m_GifMovie->currentPixmap();
+                scaleAndPresentGifCurrentFrame();
             });
             m_GifMovie->start();
             m_GifElapsedTimer.restart();
