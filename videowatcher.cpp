@@ -377,17 +377,27 @@ void VideoWatcher::toggleFullscreenWidget(QWidget *widget)
         widget->showNormal();
         layout()->addWidget(widget);
         widget->setFocus();
+        resizeGraphicsItems();
+        return;
     }
-    else //go fullscreen
-    {
-        widget->setParent(nullptr);
-        widget->setWindowFlag(Qt::Window);
-        QScreen *currentScreen = windowHandle()->screen();
-        widget->windowHandle()->setScreen(currentScreen); //fullscreen on current screen/monitor. without this line it will fullscreen on primary screen/monitor always (since we just de-parented)
-        widget->move(currentScreen->geometry().topLeft());
-        widget->resize(currentScreen->size());
-        widget->showFullScreen();
-    }
+
+    // --- entering full-screen ---
+    widget->setParent(nullptr);
+    widget->setWindowFlag(Qt::Window);
+
+    widget->winId(); // forces native window + handle
+    QScreen *currentScreen = windowHandle()->screen();
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    widget->setScreen(currentScreen);
+#else
+    if(QWindow *w = widget->windowHandle())
+        w->setScreen(currentScreen);
+#endif
+
+    widget->move(currentScreen->geometry().topLeft());
+    widget->resize(currentScreen->size());
+    widget->showFullScreen();
+    resizeGraphicsItems();
 }
 
 void VideoWatcher::toggleFullscreen()
