@@ -22,6 +22,10 @@
 #include <QStandardPaths>
 #include <QNetworkAccessManager>
 #include <QElapsedTimer>
+#include <QGraphicsScene>
+#include <QGraphicsView>
+#include <QGraphicsVideoItem>
+#include <QGraphicsProxyWidget>
 
 class QMovie;
 class QLabel;
@@ -44,7 +48,11 @@ private:
     QPushButton    *m_NextBtn{};
     QLabel         *m_CountLabel{};
     QWebEngineView *m_WebView{};
-    QVideoWidget   *m_VideoWidget{};
+    QGraphicsScene        *m_GraphicsScene;
+    QGraphicsView         *m_GraphicsView;
+    QGraphicsVideoItem    *m_VideoGraphicsItem;
+    QGraphicsProxyWidget  *m_GifLabelProxy;
+
     QMediaPlayer   *m_Player{};
     QLabel         *m_GifLabel{};
     QMovie         *m_GifMovie = nullptr;

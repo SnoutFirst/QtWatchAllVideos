@@ -45,18 +45,30 @@ void VideoWatcher::createUi()
         Any Cloudflare or CAPTCHA page will appear here before videos are extracted.
         </body></html>
     )");
-    m_VideoWidget = new QVideoWidget;
-    m_VideoWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    m_VideoWidget->hide();
 
     m_GifLabel = new QLabel;
     m_GifLabel->setAlignment(Qt::AlignCenter);
     m_GifLabel->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
     m_GifLabel->setStyleSheet("background:black");
-    m_GifLabel->hide();
 
     m_Player = new QMediaPlayer(this);
-    m_Player->setVideoOutput(m_VideoWidget);
+
+    m_GraphicsScene     = new QGraphicsScene(this);
+    m_VideoGraphicsItem = new QGraphicsVideoItem;
+    m_GraphicsScene->addItem(m_VideoGraphicsItem);
+    m_GifLabelProxy  = m_GraphicsScene->addWidget(m_GifLabel);
+
+    m_VideoGraphicsItem->setVisible(false);
+    m_GifLabelProxy ->setVisible(false);
+
+    m_Player = new QMediaPlayer(this);
+    m_Player->setVideoOutput(m_VideoGraphicsItem);
+
+    m_GraphicsView = new QGraphicsView(m_GraphicsScene);
+    m_GraphicsView->setFrameStyle(QFrame::NoFrame);
+    m_GraphicsView->setAlignment(Qt::AlignCenter);
+    m_GraphicsView->installEventFilter(this);
+    m_GraphicsView->hide();
 
     auto *topBox = new QWidget;
     auto *topLayout = new QHBoxLayout(topBox);
@@ -74,8 +86,7 @@ void VideoWatcher::createUi()
     mainLayout->setSpacing(0);
     mainLayout->addWidget(topBox, 0, Qt::AlignTop);
     mainLayout->addWidget(m_WebView, 1);
-    mainLayout->addWidget(m_VideoWidget);
-    mainLayout->addWidget(m_GifLabel);
+    mainLayout->addWidget(m_GraphicsView, 1);
     setLayout(mainLayout);
 }
 
@@ -109,7 +120,7 @@ void VideoWatcher::startLoad()
         return;
     }
     m_LoadingLabel->setText("Loading...");
-    m_VideoWidget->hide();
+    m_GraphicsView->hide();
     m_WebView->show();
     m_VideoUrls.clear();
     m_CurrentIndex = 0;
@@ -163,9 +174,8 @@ void VideoWatcher::parseHtml(const QString &html)
     transformVideoList();
     m_LoadingLabel->clear();
     m_WebView->hide();
-    m_VideoWidget->show();
-    m_VideoWidget->setFocus();
-    m_VideoWidget->installEventFilter(this);
+    m_GraphicsView->setVisible(true);
+    m_GraphicsView->setFocus();
     loadLastPosition();
     playCurrent();
 }
@@ -206,7 +216,7 @@ void VideoWatcher::playCurrent()
             m_GifMovie = nullptr;
         }
         m_Player->stop();
-        m_VideoWidget->hide();
+        m_VideoGraphicsItem->hide();
 
         QNetworkRequest req(resolved);
         req.setRawHeader("User-Agent", m_WebView->page()->profile()->httpUserAgent().toUtf8());
@@ -229,15 +239,12 @@ void VideoWatcher::playCurrent()
                 delete m_GifMovie;
                 m_GifMovie = nullptr;
             }
-            m_Player->stop();
-            m_VideoWidget->hide();
-            m_GifLabel->hide();
 
             m_GifMovie = new QMovie(reply, QByteArray(), this);
             reply->setParent(m_GifMovie); // QMovie takes ownership
             m_GifMovie->setCacheMode(QMovie::CacheAll);
             m_GifLabel->setMovie(m_GifMovie);
-            m_GifLabel->show();
+            m_GifLabelProxy->show();
             connect(m_GifMovie, &QMovie::frameChanged, this, [this, first = true](int frame) mutable
             {
                 if(!m_GifMovie)
@@ -264,7 +271,7 @@ void VideoWatcher::playCurrent()
     }
     else
     {
-        m_GifLabel->hide();
+        m_GifLabelProxy->hide();
         if(m_GifMovie)
         {
             m_GifMovie->stop();
@@ -277,7 +284,7 @@ void VideoWatcher::playCurrent()
 #else
         m_Player->setMedia(resolved);
 #endif
-        m_VideoWidget->show();
+        m_VideoGraphicsItem->show();
         m_Player->play();
     }
     saveLastPosition();
@@ -381,17 +388,13 @@ void VideoWatcher::toggleFullscreenWidget(QWidget *widget)
 
 void VideoWatcher::toggleFullscreen()
 {
-    QWidget *current;
-    if(m_GifLabel->isVisible())
-        current = m_GifLabel;
-    else //videoWidget->isVisible()
-        current = m_VideoWidget;
-    toggleFullscreenWidget(current);
+    toggleFullscreenWidget(m_GraphicsView);
 }
 
 bool VideoWatcher::eitherIsFullscreen()
 {
-    return m_VideoWidget->isFullScreen() || m_GifLabel->isFullScreen();
+    //return m_VideoWidget->isFullScreen() || m_GifLabel->isFullScreen();
+    return m_GraphicsView->isFullScreen();
 }
 
 bool VideoWatcher::handleKey(QKeyEvent *e)
@@ -418,7 +421,7 @@ bool VideoWatcher::handleKey(QKeyEvent *e)
 
 bool VideoWatcher::eventFilter(QObject *obj, QEvent *event)
 {
-    if(obj == m_VideoWidget && event->type() == QEvent::MouseButtonDblClick)
+    if(obj == m_GraphicsView && event->type() == QEvent::MouseButtonDblClick)
     {
         toggleFullscreen();
         return true;
