@@ -80,8 +80,9 @@ private:
 
     ControlsPanel          *m_ControlsPanel{};
     QGraphicsProxyWidget   *m_ControlsPanelProxy{};
-    QTimer   m_HideControlsTimer;
-    void     resetControlsTimer();
+    QTimer   m_MouseIdleTimer;
+
+    bool   m_CursorHidden = false;
 
     QMediaPlayer   *m_Player{};
     QLabel         *m_GifLabel{};
@@ -129,6 +130,9 @@ signals:
 private slots:
     void watchAllVideosForwards();
     void handlePlayPauseToggled();
+
+    void handleMouseMoved();
+    void handleMouseStoppedMoving();
 };
 
 #endif // VIDEOWATCHER_H

@@ -17,12 +17,9 @@ VideoWatcher::VideoWatcher(QWidget *parent)
     createUi();
     connectSignals();
 
-    m_HideControlsTimer.setSingleShot(true);
-    m_HideControlsTimer.setInterval(1500);
-    connect(&m_HideControlsTimer,&QTimer::timeout,this,[this]
-    {
-        m_ControlsPanelProxy->hide();
-    });
+    m_MouseIdleTimer.setSingleShot(true);
+    m_MouseIdleTimer.setInterval(1500);
+    connect(&m_MouseIdleTimer, &QTimer::timeout, this, &VideoWatcher::handleMouseStoppedMoving);
 }
 
 void VideoWatcher::createUi()
@@ -76,7 +73,7 @@ void VideoWatcher::createUi()
 
     m_GraphicsView = new MyGraphicsView(m_GraphicsScene);
     m_GraphicsView->onResized = [this]{ resizeGraphicsItems(); };
-    m_GraphicsView->onMouseMoved = [this]{ resetControlsTimer(); };
+    m_GraphicsView->onMouseMoved = [this]{ handleMouseMoved(); };
     m_GraphicsView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     m_GraphicsView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     m_GraphicsView->setTransformationAnchor(QGraphicsView::AnchorViewCenter);
@@ -202,7 +199,7 @@ void VideoWatcher::parseHtml(const QString &html)
     m_GraphicsView->setFocus();
     loadLastPosition();
     playCurrent();
-    resetControlsTimer();
+    handleMouseMoved();
 }
 
 void VideoWatcher::transformVideoList()
@@ -532,8 +529,22 @@ void VideoWatcher::handlePlayPauseToggled()
     }
     emit playPauseToggleHandled(playing);
 }
-void VideoWatcher::resetControlsTimer()
+void VideoWatcher::handleMouseMoved()
 {
     m_ControlsPanelProxy->show();
-    m_HideControlsTimer.start();
+    if(m_CursorHidden)
+    {
+        m_GraphicsView->viewport()->unsetCursor();
+        m_CursorHidden = false;
+    }
+    m_MouseIdleTimer.start();
+}
+void VideoWatcher::handleMouseStoppedMoving()
+{
+    m_ControlsPanelProxy->hide();
+    if(!m_CursorHidden)
+    {
+        m_GraphicsView->viewport()->setCursor(Qt::BlankCursor);
+        m_CursorHidden = true;
+    }
 }
