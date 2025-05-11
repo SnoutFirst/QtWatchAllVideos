@@ -38,6 +38,7 @@ class MyGraphicsView : public QGraphicsView
 public:
     using QGraphicsView::QGraphicsView;
     std::function<void()> onResized;
+    std::function<void()> onMouseMoved;
 
 protected:
     void resizeEvent(QResizeEvent *e) override
@@ -46,6 +47,12 @@ protected:
         if(onResized)
             onResized();
     }
+     void mouseMoveEvent(QMouseEvent *e) override
+     {
+         QGraphicsView::mouseMoveEvent(e);
+         if(onMouseMoved)
+             onMouseMoved();
+     }
 };
 
 class VideoWatcher final : public QWidget
@@ -73,6 +80,8 @@ private:
 
     ControlsPanel          *m_ControlsPanel{};
     QGraphicsProxyWidget   *m_ControlsPanelProxy{};
+    QTimer   m_HideControlsTimer;
+    void     resetControlsTimer();
 
     QMediaPlayer   *m_Player{};
     QLabel         *m_GifLabel{};
