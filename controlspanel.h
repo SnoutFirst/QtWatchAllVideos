@@ -12,7 +12,7 @@ public:
 private:
     QPushButton *m_PlayPauseBtn{};
 signals:
-    void playPauseToggled();
+    void playPauseToggleButtonClicked();
 public slots:
     void updatePlayPauseIcon(bool playing);
 };

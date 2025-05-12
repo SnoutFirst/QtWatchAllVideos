@@ -126,10 +126,10 @@ protected:
     void keyPressEvent(QKeyEvent *e) override;
     void resizeEvent(QResizeEvent *event) override;
 signals:
-    void playPauseToggleHandled(bool playing);
+    void playPauseStateChanged(bool playing);
 private slots:
     void watchAllVideosForwards();
-    void handlePlayPauseToggled();
+    void togglePlayPause();
 
     void handleMouseMoved();
     void handleMouseStoppedMoving();

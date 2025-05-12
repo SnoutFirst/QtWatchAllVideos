@@ -127,8 +127,8 @@ void VideoWatcher::connectSignals()
         if(s == QMediaPlayer::EndOfMedia) playNext();
     });
 
-    connect(m_ControlsPanel, &ControlsPanel::playPauseToggled, this, &VideoWatcher::handlePlayPauseToggled);
-    connect(this, &VideoWatcher::playPauseToggleHandled, m_ControlsPanel, &ControlsPanel::updatePlayPauseIcon);
+    connect(m_ControlsPanel, &ControlsPanel::playPauseToggleButtonClicked, this, &VideoWatcher::togglePlayPause);
+    connect(this, &VideoWatcher::playPauseStateChanged, m_ControlsPanel, &ControlsPanel::updatePlayPauseIcon);
 }
 
 void VideoWatcher::startLoad()
@@ -311,6 +311,7 @@ void VideoWatcher::playCurrent()
     }
     saveLastPosition();
     updateUi();
+    emit playPauseStateChanged(true);
 }
 
 void VideoWatcher::playNext()
@@ -433,7 +434,7 @@ bool VideoWatcher::handleKey(QKeyEvent *e)
     {
     case Qt::Key_M: m_Player->setMuted(!m_Player->isMuted()); return true;
     case Qt::Key_Space:
-        handlePlayPauseToggled();
+        togglePlayPause();
         return true;
     case Qt::Key_N:
         [[fallthrough]];
@@ -492,7 +493,7 @@ void VideoWatcher::resizeGraphicsItems()
     m_ControlsPanel->setFixedWidth(viewSize.width());
     m_ControlsPanelProxy->setPos(0, viewSize.height() - panelHeight);
 }
-void VideoWatcher::handlePlayPauseToggled()
+void VideoWatcher::togglePlayPause()
 {
     bool playing = true;
     if(m_GifLabel->isVisible() && m_GifMovie)
@@ -527,7 +528,7 @@ void VideoWatcher::handlePlayPauseToggled()
             break;
         }
     }
-    emit playPauseToggleHandled(playing);
+    emit playPauseStateChanged(playing);
 }
 void VideoWatcher::handleMouseMoved()
 {

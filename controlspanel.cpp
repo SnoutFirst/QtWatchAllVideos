@@ -34,7 +34,7 @@ ControlsPanel::ControlsPanel(QWidget *parent)
     lay->addWidget(m_PlayPauseBtn);
     lay->addStretch();
 
-    connect(m_PlayPauseBtn,&QPushButton::clicked,this,&ControlsPanel::playPauseToggled);
+    connect(m_PlayPauseBtn,&QPushButton::clicked,this,&ControlsPanel::playPauseToggleButtonClicked);
 }
 void ControlsPanel::updatePlayPauseIcon(bool playing)
 {
