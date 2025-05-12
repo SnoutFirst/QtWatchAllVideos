@@ -217,7 +217,6 @@ void VideoWatcher::parseHtml(const QString &html)
     m_LoadingLabel->clear();
     m_WebView->hide();
     m_GraphicsView->setVisible(true);
-    m_GraphicsView->setFocus();
     loadLastPosition();
     playCurrent();
     handleMouseMoved();
@@ -332,6 +331,7 @@ void VideoWatcher::playCurrent()
     }
     saveLastPosition();
     updateUi();
+    m_GraphicsView->setFocus();
     emit playPauseStateChanged(true);
 }
 
