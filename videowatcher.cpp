@@ -7,6 +7,8 @@
 #include <QWebEngineCookieStore>
 #include <QWindow>
 #include <QScreen>
+#include <QApplication>
+#include <QClipboard>
 
 #define MIN_MS_TO_SHOW_GIF_LOOPING_IF_NECESSARY (3 * 1000)
 
@@ -28,10 +30,29 @@ void VideoWatcher::createUi()
     m_WatchAllBtn = new QToolButton;
     m_WatchAllBtn->setText("Watch All Videos");
     m_WatchAllBtn->setPopupMode(QToolButton::MenuButtonPopup);
+    m_UrlInput->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(m_UrlInput, &QLineEdit::customContextMenuRequested, this, &VideoWatcher::showCustomContextMenu);
+
+    m_ActionWatchShuffled = new QAction("Shuffled", this);
+    m_ActionWatchReversed = new QAction("Reversed", this);
+
+    m_ActionWatchShuffled->setShortcut(QKeySequence("Ctrl+S"));
+    m_ActionWatchReversed->setShortcut(QKeySequence("Ctrl+R"));
+
+    connect(m_ActionWatchShuffled, &QAction::triggered, this, [this]
+    {
+        m_PlayMode = PlayMode::Shuffled;
+        startLoad();
+    });
+    connect(m_ActionWatchReversed, &QAction::triggered, this, [this]
+    {
+        m_PlayMode = PlayMode::Reversed;
+        startLoad();
+    });
 
     QMenu *menu = new QMenu(this);
-    menu->addAction("Shuffled", this, [this]{m_PlayMode = PlayMode::Shuffled; startLoad();})->setShortcut(QKeySequence("Ctrl+S"));
-    menu->addAction("Reversed", this, [this]{m_PlayMode = PlayMode::Reversed; startLoad();})->setShortcut(QKeySequence("Ctrl+R"));
+    menu->addAction(m_ActionWatchShuffled);
+    menu->addAction(m_ActionWatchReversed);
     m_WatchAllBtn->setMenu(menu);
 
     m_LoadingLabel = new QLabel;
@@ -548,4 +569,41 @@ void VideoWatcher::handleMouseStoppedMoving()
         m_GraphicsView->viewport()->setCursor(Qt::BlankCursor);
         m_CursorHidden = true;
     }
+}
+void VideoWatcher::showCustomContextMenu(const QPoint &pos)
+{
+    std::unique_ptr<QMenu> contextMenu(m_UrlInput->createStandardContextMenu());
+
+    QAction *pasteAndWatch = new QAction("Paste and Watch All Videos", contextMenu.get());
+    connect(pasteAndWatch, &QAction::triggered, this, [this]
+    {
+        m_UrlInput->setText(QApplication::clipboard()->text().trimmed());
+        watchAllVideosForwards();
+    });
+
+    // Clone Shuffled and Reversed actions with modified text, but keep same shortcut and slot
+    QAction *shuffledClone = new QAction("Paste and Watch All Videos (Shuffled)", contextMenu.get());
+    QAction *reversedClone = new QAction("Paste and Watch All Videos (Reversed)", contextMenu.get());
+
+    shuffledClone->setShortcut(m_ActionWatchShuffled->shortcut());
+    reversedClone->setShortcut(m_ActionWatchReversed->shortcut());
+
+    connect(shuffledClone, &QAction::triggered, this, [this]
+    {
+        m_UrlInput->setText(QApplication::clipboard()->text().trimmed());
+        m_ActionWatchShuffled->trigger();
+    });
+
+    connect(reversedClone, &QAction::triggered, this, [this]
+    {
+        m_UrlInput->setText(QApplication::clipboard()->text().trimmed());
+        m_ActionWatchReversed->trigger();
+    });
+
+    contextMenu->addSeparator();
+    contextMenu->addAction(pasteAndWatch);
+    contextMenu->addAction(shuffledClone);
+    contextMenu->addAction(reversedClone);
+
+    contextMenu->exec(m_UrlInput->mapToGlobal(pos));
 }

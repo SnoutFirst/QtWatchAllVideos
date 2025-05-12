@@ -99,6 +99,9 @@ private:
 
     bool m_First = true;
 
+    QAction *m_ActionWatchShuffled = nullptr;
+    QAction *m_ActionWatchReversed = nullptr;
+
     // ---------------------------------------------------------------------
 
     void createUi();
@@ -133,6 +136,8 @@ private slots:
 
     void handleMouseMoved();
     void handleMouseStoppedMoving();
+
+    void showCustomContextMenu(const QPoint &pos);
 };
 
 #endif // VIDEOWATCHER_H
