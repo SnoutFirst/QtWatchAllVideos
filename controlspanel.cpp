@@ -7,9 +7,13 @@
 ControlsPanel::ControlsPanel(QWidget *parent)
     : QWidget(parent)
 {
-    setAutoFillBackground(true);
     setAttribute(Qt::WA_StyledBackground, true);
+#if 0 //completely transparent
+    setAutoFillBackground(true);
     setAttribute(Qt::WA_TranslucentBackground, true);
+#else
+    setStyleSheet("background-color: rgba(0, 0, 0, 50);");
+#endif
 
     auto *lay = new QHBoxLayout(this);
     lay->setContentsMargins(12,6,12,6);
