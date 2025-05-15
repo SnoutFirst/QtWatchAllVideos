@@ -53,6 +53,18 @@ protected:
          if(onMouseMoved)
              onMouseMoved();
      }
+     void keyPressEvent(QKeyEvent *event)
+     {
+         if(isFullScreen())
+         {
+            emit keyPressed(event);
+            event->accept();
+         }
+         else
+            QGraphicsView::keyPressEvent(event);
+     }
+signals:
+     void keyPressed(QKeyEvent *event);
 };
 
 class VideoWatcher final : public QWidget
@@ -119,9 +131,7 @@ private:
     void loadLastPosition();
     void toggleFullscreen();
 
-    bool handleKey(QKeyEvent *e);
     void scaleAndPresentGifCurrentFrame();
-    void toggleFullscreenWidget(QWidget *widget);
     bool eitherIsFullscreen();
     void maybeCleanupOldState();
     void resizeGraphicsItems();
@@ -132,6 +142,7 @@ protected:
 signals:
     void playPauseStateChanged(bool playing);
 private slots:
+    bool handleKey(QKeyEvent *e);
     void watchAllVideosForwards();
     void togglePlayPause();
 

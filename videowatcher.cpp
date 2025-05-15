@@ -104,6 +104,7 @@ void VideoWatcher::createUi()
     m_GraphicsView->setTransformationAnchor(QGraphicsView::AnchorViewCenter);
     m_GraphicsView->setFrameStyle(QFrame::NoFrame);
     m_GraphicsView->setAlignment(Qt::AlignCenter);
+    m_GraphicsView->setFocusPolicy(Qt::StrongFocus);
     m_GraphicsView->setMouseTracking(true);
     m_GraphicsView->viewport()->setMouseTracking(true);
     m_GraphicsView->viewport()->installEventFilter(this);
@@ -151,6 +152,8 @@ void VideoWatcher::connectSignals()
     {
         if(s == QMediaPlayer::EndOfMedia) playNext();
     });
+
+    connect(m_GraphicsView, &MyGraphicsView::keyPressed, this, &VideoWatcher::handleKey);
 
     connect(m_ControlsPanel, &ControlsPanel::playPauseToggleButtonClicked, this, &VideoWatcher::togglePlayPause);
     connect(this, &VideoWatcher::playPauseStateChanged, m_ControlsPanel, &ControlsPanel::updatePlayPauseIcon);
@@ -413,38 +416,33 @@ void VideoWatcher::loadLastPosition()
         m_CurrentIndex = index;
 }
 
-void VideoWatcher::toggleFullscreenWidget(QWidget *widget)
+void VideoWatcher::toggleFullscreen()
 {
-    if(widget->isFullScreen())
+    if(m_GraphicsView->isFullScreen())
     {
-        widget->setParent(this);
-        widget->showNormal();
-        layout()->addWidget(widget);
-        widget->setFocus();
+        m_GraphicsView->setParent(this);
+        m_GraphicsView->showNormal();
+        layout()->addWidget(m_GraphicsView);
+        m_GraphicsView->setFocus();
         return;
     }
 
     // --- entering full-screen ---
-    widget->setParent(nullptr);
-    widget->setWindowFlag(Qt::Window);
+    m_GraphicsView->setParent(nullptr);
+    m_GraphicsView->setWindowFlag(Qt::Window);
 
-    widget->winId(); // forces native window + handle
+    m_GraphicsView->winId(); // forces native window + handle
     QScreen *currentScreen = windowHandle()->screen();
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-    widget->setScreen(currentScreen);
+    m_GraphicsView->setScreen(currentScreen);
 #else
-    if(QWindow *w = widget->windowHandle())
+    if(QWindow *w = m_GraphicsView->windowHandle())
         w->setScreen(currentScreen);
 #endif
 
-    widget->move(currentScreen->geometry().topLeft());
-    widget->resize(currentScreen->size());
-    widget->showFullScreen();
-}
-
-void VideoWatcher::toggleFullscreen()
-{
-    toggleFullscreenWidget(m_GraphicsView);
+    m_GraphicsView->move(currentScreen->geometry().topLeft());
+    m_GraphicsView->resize(currentScreen->size());
+    m_GraphicsView->showFullScreen();
 }
 
 bool VideoWatcher::eitherIsFullscreen()
@@ -499,11 +497,6 @@ bool VideoWatcher::eventFilter(QObject *obj, QEvent *event)
                 return true;
             }
         }
-    }
-
-    if(event->type() == QEvent::KeyPress)
-    {
-        return handleKey(static_cast<QKeyEvent*>(event));
     }
 
     return QWidget::eventFilter(obj, event);
