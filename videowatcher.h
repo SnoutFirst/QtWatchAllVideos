@@ -102,6 +102,7 @@ private:
     QAction *m_ActionWatchShuffled = nullptr;
     QAction *m_ActionWatchReversed = nullptr;
 
+    QTimer m_SingleVsDoubleClickTimer;
     // ---------------------------------------------------------------------
 
     void createUi();

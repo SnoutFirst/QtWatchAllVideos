@@ -22,6 +22,10 @@ VideoWatcher::VideoWatcher(QWidget *parent)
     m_MouseIdleTimer.setSingleShot(true);
     m_MouseIdleTimer.setInterval(1500);
     connect(&m_MouseIdleTimer, &QTimer::timeout, this, &VideoWatcher::handleMouseStoppedMoving);
+
+    m_SingleVsDoubleClickTimer.setSingleShot(true);
+    m_SingleVsDoubleClickTimer.setInterval(QApplication::doubleClickInterval());
+    connect(&m_SingleVsDoubleClickTimer, &QTimer::timeout, this, &VideoWatcher::togglePlayPause);
 }
 
 void VideoWatcher::createUi()
@@ -102,7 +106,7 @@ void VideoWatcher::createUi()
     m_GraphicsView->setAlignment(Qt::AlignCenter);
     m_GraphicsView->setMouseTracking(true);
     m_GraphicsView->viewport()->setMouseTracking(true);
-    m_GraphicsView->installEventFilter(this);
+    m_GraphicsView->viewport()->installEventFilter(this);
     m_GraphicsView->hide();
 
     auto *topBox = new QWidget;
@@ -370,7 +374,7 @@ void VideoWatcher::saveLastPosition()
     QString url = m_WebView->url().toString(QUrl::RemoveFragment|QUrl::StripTrailingSlash);
     QVariantMap value;
     value["videoUrl"] = m_VideoUrls[m_CurrentIndex];
-    value["date"] = QDateTime::currentSecsSinceEpoch(); // Add this line
+    value["date"] = QDateTime::currentSecsSinceEpoch();
     m_Settings.setValue("last:" + url, value);
 }
 
@@ -474,10 +478,27 @@ bool VideoWatcher::handleKey(QKeyEvent *e)
 
 bool VideoWatcher::eventFilter(QObject *obj, QEvent *event)
 {
-    if(obj == m_GraphicsView && event->type() == QEvent::MouseButtonDblClick)
+    if(obj == m_GraphicsView->viewport())
     {
-        toggleFullscreen();
-        return true;
+        if(event->type() == QEvent::MouseButtonPress || event->type() == QEvent::MouseButtonDblClick)
+        {
+            QMouseEvent *me = static_cast<QMouseEvent*>(event);
+            QPointF scenePos = m_GraphicsView->mapToScene(me->pos());
+            QGraphicsItem *item = m_GraphicsScene->itemAt(scenePos, QTransform());
+            if(item && (item == m_ControlsPanelProxy || m_ControlsPanelProxy->isAncestorOf(item)))
+                return false;
+
+            if(event->type() == QEvent::MouseButtonPress && me->button() == Qt::LeftButton)
+            {
+                m_SingleVsDoubleClickTimer.start();
+            }
+            else if(event->type() == QEvent::MouseButtonDblClick)
+            {
+                m_SingleVsDoubleClickTimer.stop();
+                toggleFullscreen();
+                return true;
+            }
+        }
     }
 
     if(event->type() == QEvent::KeyPress)
