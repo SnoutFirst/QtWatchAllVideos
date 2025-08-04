@@ -94,8 +94,6 @@ private:
     QGraphicsProxyWidget   *m_ControlsPanelProxy{};
     QTimer   m_MouseIdleTimer;
 
-    bool   m_CursorHidden = false;
-
     QMediaPlayer   *m_Player{};
     QLabel         *m_GifLabel{};
     QMovie         *m_GifMovie = nullptr;

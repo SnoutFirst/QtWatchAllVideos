@@ -568,21 +568,13 @@ void VideoWatcher::togglePlayPause()
 void VideoWatcher::handleMouseMoved()
 {
     m_ControlsPanelProxy->show();
-    if(m_CursorHidden)
-    {
-        m_GraphicsView->viewport()->unsetCursor();
-        m_CursorHidden = false;
-    }
+    m_GraphicsView->viewport()->unsetCursor();
     m_MouseIdleTimer.start();
 }
 void VideoWatcher::handleMouseStoppedMoving()
 {
     m_ControlsPanelProxy->hide();
-    if(!m_CursorHidden)
-    {
-        m_GraphicsView->viewport()->setCursor(Qt::BlankCursor);
-        m_CursorHidden = true;
-    }
+    m_GraphicsView->viewport()->setCursor(Qt::BlankCursor);
 }
 void VideoWatcher::showCustomContextMenu(const QPoint &pos)
 {
