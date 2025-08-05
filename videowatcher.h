@@ -73,7 +73,7 @@ class VideoWatcher final : public QWidget
 
 public:
     VideoWatcher(QWidget *parent = nullptr);
-
+    void showWindowAtLastSizeAndPosition();
 private:
     enum class PlayMode { Forward, Shuffled, Reversed };
 
@@ -133,10 +133,13 @@ private:
     bool eitherIsFullscreen();
     void maybeCleanupOldState();
     void resizeGraphicsItems();
+
+    void saveWindowSizeAndPosition();
 protected:
     bool eventFilter(QObject *obj, QEvent *event) override;
     void keyPressEvent(QKeyEvent *e) override;
     void resizeEvent(QResizeEvent *event) override;
+    void closeEvent(QCloseEvent *event) override;
 signals:
     void playPauseStateChanged(bool playing);
 private slots:

@@ -27,7 +27,23 @@ VideoWatcher::VideoWatcher(QWidget *parent)
     m_SingleVsDoubleClickTimer.setInterval(QApplication::doubleClickInterval());
     connect(&m_SingleVsDoubleClickTimer, &QTimer::timeout, this, &VideoWatcher::togglePlayPause);
 }
-
+void VideoWatcher::showWindowAtLastSizeAndPosition()
+{
+    QSettings settings;
+    settings.beginGroup("Window");
+    if(!settings.contains("size"))
+    {
+        //first run = show maximized
+        showMaximized();
+    }
+    else
+    {
+        resize(settings.value("size", QSize(640, 480)).toSize());
+        move(settings.value("pos", QPoint(200, 200)).toPoint());
+        show();
+    }
+    settings.endGroup();
+}
 void VideoWatcher::createUi()
 {
     m_UrlInput = new QLineEdit;
@@ -512,6 +528,10 @@ void VideoWatcher::resizeEvent(QResizeEvent *e)
     scaleAndPresentGifCurrentFrame();
     QWidget::resizeEvent(e);
 }
+void VideoWatcher::closeEvent(QCloseEvent *event)
+{
+    saveWindowSizeAndPosition();
+}
 void VideoWatcher::resizeGraphicsItems()
 {
     const QSizeF viewSize = m_GraphicsView->viewport()->size();
@@ -527,6 +547,14 @@ void VideoWatcher::resizeGraphicsItems()
     const int panelHeight = m_ControlsPanel->sizeHint().height();
     m_ControlsPanel->setFixedWidth(viewSize.width());
     m_ControlsPanelProxy->setPos(0, viewSize.height() - panelHeight);
+}
+void VideoWatcher::saveWindowSizeAndPosition()
+{
+    QSettings settings;
+    settings.beginGroup("Window");
+    settings.setValue("size", size());
+    settings.setValue("pos", pos());
+    settings.endGroup();
 }
 void VideoWatcher::togglePlayPause()
 {
