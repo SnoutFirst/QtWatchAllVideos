@@ -268,6 +268,8 @@ void VideoWatcher::playCurrent()
 {
     if(m_CurrentIndex < 0 || m_CurrentIndex >= m_VideoUrls.size()) return;
 
+    emit aboutToPlay();
+
     QUrl baseUrl = m_WebView->url();
     QUrl resolved = baseUrl.resolved(QUrl(m_VideoUrls[m_CurrentIndex]));
     QString ext = resolved.fileName().section('.',-1).toLower();
@@ -289,14 +291,27 @@ void VideoWatcher::playCurrent()
         req.setRawHeader("Referer", m_WebView->url().toString().toUtf8());
 
         QNetworkReply *reply = m_Nam.get(req);
+
+        //connect to aboutToPlay in order to abort the get request if the user triggers next/previous action before the get completes
+        connect(this, &VideoWatcher::aboutToPlay, reply, &QNetworkReply::abort);
+
         connect(reply, &QNetworkReply::finished, this, [this, reply]
         {
-            if(reply->error() != QNetworkReply::NoError)
+            if(reply->error() == QNetworkReply::OperationCanceledError)
+            {
+                //user triggered next/previous before the get() finished, so we canceled it using the signal aboutToPlay connected to abort. do nothing here just deleteLater the reply and return
+                reply->deleteLater();
+                return;
+            }
+            else if(reply->error() != QNetworkReply::NoError)
             {
                 qDebug() << "GIF load failed:" << reply->errorString();
                 reply->deleteLater();
                 return;
             }
+
+            //the user did not trigger next/previous before get() completed, so we don't need to abort() anymore. this disconnect might not be needed since we're already *in* finished(), but it feels right to get rid of it
+            disconnect(this, &VideoWatcher::aboutToPlay, reply, &QNetworkReply::abort);
 
             if(m_GifMovie)
             {

@@ -141,6 +141,7 @@ protected:
     void resizeEvent(QResizeEvent *event) override;
     void closeEvent(QCloseEvent *event) override;
 signals:
+    void aboutToPlay();
     void playPauseStateChanged(bool playing);
 private slots:
     bool handleKey(QKeyEvent *e);
