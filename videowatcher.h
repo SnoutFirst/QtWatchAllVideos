@@ -99,6 +99,7 @@ private:
     QMovie         *m_GifMovie = nullptr;
     QPixmap        m_GifCurrentFrame{};
     QElapsedTimer  m_GifElapsedTimer;
+    QElapsedTimer m_PlayNextAutomaticallyAndUserInputRaceConditionDetectionElapsedTimer;
     QNetworkAccessManager m_Nam;
 
     // State
@@ -123,6 +124,8 @@ private:
     void transformVideoList();
     void playCurrent();
     void playNext();
+    void playNextFromUserInput();
+    void playNextAutomatically();
     void playPrevious();
     void updateUi();
     void saveLastPosition();

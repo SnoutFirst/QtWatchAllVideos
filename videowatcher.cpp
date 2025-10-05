@@ -26,6 +26,8 @@ VideoWatcher::VideoWatcher(QWidget *parent)
     m_SingleVsDoubleClickTimer.setSingleShot(true);
     m_SingleVsDoubleClickTimer.setInterval(QApplication::doubleClickInterval());
     connect(&m_SingleVsDoubleClickTimer, &QTimer::timeout, this, &VideoWatcher::togglePlayPause);
+
+    m_PlayNextAutomaticallyAndUserInputRaceConditionDetectionElapsedTimer.start();
 }
 void VideoWatcher::showWindowAtLastSizeAndPosition()
 {
@@ -161,12 +163,13 @@ void VideoWatcher::connectSignals()
     connect(m_UrlInput, &QLineEdit::returnPressed, this, &VideoWatcher::watchAllVideosForwards);
     connect(m_WatchAllBtn, &QToolButton::clicked, this, &VideoWatcher::watchAllVideosForwards);
     connect(m_PrevBtn, &QPushButton::clicked, this, &VideoWatcher::playPrevious);
-    connect(m_NextBtn, &QPushButton::clicked, this, &VideoWatcher::playNext);
+    connect(m_NextBtn, &QPushButton::clicked, this, &VideoWatcher::playNextFromUserInput);
 
     connect(m_WebView, &QWebEngineView::loadFinished, this, &VideoWatcher::onPageLoaded);
     connect(m_Player, &QMediaPlayer::mediaStatusChanged, this, [this](QMediaPlayer::MediaStatus s)
     {
-        if(s == QMediaPlayer::EndOfMedia) playNext();
+        if(s == QMediaPlayer::EndOfMedia)
+            playNextAutomatically();
     });
 
     connect(m_GraphicsView, &MyGraphicsView::keyPressed, this, &VideoWatcher::handleKey);
@@ -338,7 +341,7 @@ void VideoWatcher::playCurrent()
                     }
                     else if(m_GifElapsedTimer.elapsed() >= MIN_MS_TO_SHOW_GIF_LOOPING_IF_NECESSARY)
                     {
-                        playNext();
+                        playNextAutomatically();
                         return; //don't show the first frame twice
                     }
                 }
@@ -382,6 +385,25 @@ void VideoWatcher::playNext()
         ++m_CurrentIndex;
         playCurrent();
     }
+}
+
+void VideoWatcher::playNextFromUserInput()
+{
+    if(m_PlayNextAutomaticallyAndUserInputRaceConditionDetectionElapsedTimer.elapsed() > 1000)
+    {
+        playNext();
+    }
+    else
+    {
+        //do nothing
+        //detected race condition where user pressed "next" 0.0000001 seconds after the video ended and auto-played "next", which would cause essentially skipping a video. crucially the user can still spam click 'next' as fast as they want and it'll still work
+    }
+}
+
+void VideoWatcher::playNextAutomatically()
+{
+    m_PlayNextAutomaticallyAndUserInputRaceConditionDetectionElapsedTimer.start();
+    playNext();
 }
 
 void VideoWatcher::playPrevious()
@@ -494,7 +516,7 @@ bool VideoWatcher::handleKey(QKeyEvent *e)
         [[fallthrough]];
     case Qt::Key_Return:
         [[fallthrough]];
-    case Qt::Key_Enter: playNext(); return true;
+    case Qt::Key_Enter: playNextFromUserInput(); return true;
     case Qt::Key_P: playPrevious(); return true;
     case Qt::Key_F: toggleFullscreen(); return true;
     case Qt::Key_Escape:
