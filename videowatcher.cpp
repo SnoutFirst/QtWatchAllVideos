@@ -89,7 +89,13 @@ void VideoWatcher::createUi()
     m_WebView->setHtml(R"(
         <html><body style='font-family:sans-serif;padding:2em;color:#888'>
         Paste a thread URL above and click <b>Watch All Videos</b>.<br><br>
-        Any Cloudflare or CAPTCHA page will appear here before videos are extracted.
+        Built with 4chan <b>/gif/</b> browsing in mind, but it works on any site that serves
+        its videos as plain <b>&lt;video&gt;</b> elements or as links ending in a video
+        extension (including <b>.gif</b>).<br><br>
+        It does <b>not</b> work on sites that use fancy JavaScript players to load their
+        videos &mdash; <b>YouTube</b> and many others are out of luck.<br><br>
+        Any Cloudflare or CAPTCHA page will appear here first; pass it by hand and the
+        videos will be extracted from the page you land on.
         </body></html>
     )");
 
