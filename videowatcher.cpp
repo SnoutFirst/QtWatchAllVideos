@@ -178,7 +178,14 @@ void VideoWatcher::connectSignals()
             playNextAutomatically();
     });
 
-    connect(m_GraphicsView, &MyGraphicsView::keyPressed, this, &VideoWatcher::handleKey);
+    connect(m_GraphicsView, &MyGraphicsView::keyPressed, this, [this](QKeyEvent *e)
+    {
+        //keyPressed comes from MyGraphicsView::keyPressEvent(), which decides between
+        //consuming the key and passing it on to QGraphicsView by looking at isAccepted().
+        //The signal itself drops handleKey()'s return value, so accept here.
+        if(handleKey(e))
+            e->accept();
+    });
 
     connect(m_ControlsPanel, &ControlsPanel::playPauseToggleButtonClicked, this, &VideoWatcher::togglePlayPause);
     connect(this, &VideoWatcher::playPauseStateChanged, m_ControlsPanel, &ControlsPanel::updatePlayPauseIcon);
@@ -273,14 +280,58 @@ void VideoWatcher::scaleAndPresentGifCurrentFrame()
         m_GifLabel->setPixmap(scaled);
     }
 }
+QUrl VideoWatcher::resolvedCurrentUrl() const
+{
+    if(m_CurrentIndex < 0 || m_CurrentIndex >= m_VideoUrls.size())
+        return QUrl();
+    return m_WebView->url().resolved(QUrl(m_VideoUrls[m_CurrentIndex]));
+}
+
+void VideoWatcher::seekBy(qint64 deltaMs)
+{
+    if(m_VideoUrls.isEmpty())
+        return;
+
+    // GIFs have no seekable timeline: QMovie plays the frames on its own clock and the
+    // data is streamed in as it is decoded, so there is no position to jump to.
+    if(resolvedCurrentUrl().fileName().section('.', -1).toLower() == "gif")
+        return;
+
+    const qint64 duration = m_Player->duration();   // 0 until the media is loaded
+    const qint64 position = m_Player->position();
+    qint64 target = position + deltaMs;
+
+    // Seeking past the end is really a "next", and the next video starts at 0 anyway.
+    // playNextFromUserInput() (not playNext()) so the same race guard that protects the
+    // N key applies here: just after an auto-advance, a stray keypress must not skip a
+    // video the user has not seen.
+    if(deltaMs > 0 && duration > 0 && target >= duration)
+    {
+        playNextFromUserInput();
+        return;
+    }
+
+    // Before the start of the video: clamp to 0 instead of handing the player a
+    // negative position; likewise never seek beyond a known duration.
+    if(target < 0)
+        target = 0;
+    if(duration > 0 && target > duration)
+        target = duration;
+    m_Player->setPosition(target);
+
+    // A video that has run to its end sits in StoppedState on its last frame; seeking
+    // back into it should resume playback rather than leave a frozen picture.
+    if(m_Player->state() == QMediaPlayer::StoppedState)
+        m_Player->play();
+}
+
 void VideoWatcher::playCurrent()
 {
     if(m_CurrentIndex < 0 || m_CurrentIndex >= m_VideoUrls.size()) return;
 
     emit aboutToPlay();
 
-    QUrl baseUrl = m_WebView->url();
-    QUrl resolved = baseUrl.resolved(QUrl(m_VideoUrls[m_CurrentIndex]));
+    QUrl resolved = resolvedCurrentUrl();
     QString ext = resolved.fileName().section('.',-1).toLower();
 
     if(ext == "gif")
@@ -524,6 +575,8 @@ bool VideoWatcher::handleKey(QKeyEvent *e)
         [[fallthrough]];
     case Qt::Key_Enter: playNextFromUserInput(); return true;
     case Qt::Key_P: playPrevious(); return true;
+    case Qt::Key_Left: seekBy(-5000); return true;
+    case Qt::Key_Right: seekBy(5000); return true;
     case Qt::Key_F: toggleFullscreen(); return true;
     case Qt::Key_Escape:
         if(eitherIsFullscreen())

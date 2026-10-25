@@ -55,13 +55,17 @@ protected:
      }
      void keyPressEvent(QKeyEvent *event)
      {
-         if(isFullScreen())
+         // A signal-slot connection cannot carry the handler's bool back, so "handled" is
+         // reported by the handler accepting the event instead. Clear the accepted flag
+         // first (key events arrive accepted) so that acceptance is the handler's doing.
+         event->ignore();
+         emit keyPressed(event);
+         if(event->isAccepted() || isFullScreen())
          {
-            emit keyPressed(event);
             event->accept();
+            return;
          }
-         else
-            QGraphicsView::keyPressEvent(event);
+         QGraphicsView::keyPressEvent(event);
      }
 signals:
      void keyPressed(QKeyEvent *event);
@@ -122,6 +126,8 @@ private:
     void onPageLoaded(bool ok);
     void parseHtml(const QString &html);
     void transformVideoList();
+    QUrl resolvedCurrentUrl() const;
+    void seekBy(qint64 deltaMs);
     void playCurrent();
     void playNext();
     void playNextFromUserInput();

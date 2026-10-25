@@ -58,6 +58,9 @@ that needs a human, and everything after that is automatic.
   - <kbd>Space</kbd> — play / pause
   - <kbd>N</kbd> or <kbd>Enter</kbd> — next video
   - <kbd>P</kbd> — previous video
+  - <kbd>←</kbd> — jump back 5 seconds (stops at the start of the video)
+  - <kbd>→</kbd> — jump forward 5 seconds (past the end, it moves on to the next
+    video)
   - <kbd>M</kbd> — mute / unmute
   - <kbd>F</kbd> — toggle fullscreen
   - <kbd>Esc</kbd> — leave fullscreen
