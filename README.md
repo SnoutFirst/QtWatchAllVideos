@@ -25,9 +25,13 @@ HTML only, so it **won't work on sites that use fancy JavaScript players to load
 their videos** — YouTube is the obvious example, but plenty of others are in the
 same boat (anything with blob/MSE streaming, DRM, or an API-driven player).
 
-If a site also throws a Cloudflare or CAPTCHA page at you, the real page loads
-in the embedded browser first so you can pass the challenge by hand; the video
-scan then runs against the page you ended up on.
+## CAPTCHAs
+
+It **can** get past a Cloudflare or CAPTCHA interstitial — but not on its own.
+The real page loads in the embedded browser first, and you pass the challenge by
+hand; the video scan then runs against the page you ended up on. There is no
+solver, no cookie farming and no headless trickery: the human does the one bit
+that needs a human, and everything after that is automatic.
 
 ## Features
 
