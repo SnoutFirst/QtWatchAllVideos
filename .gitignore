@@ -34,3 +34,7 @@ $RECYCLE.BIN/
 .TemporaryItems
 ehthumbs.db
 Thumbs.db
+
+# Qt Creator / old QtWatchAllVideos
+CMakeLists.txt.user
+build
