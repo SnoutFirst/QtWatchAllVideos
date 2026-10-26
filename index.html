@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QtWatchAllVideos downloads</title>
+<style>
+  :root { color-scheme: dark; }
+  body {
+    margin: 0 auto; padding: 2rem 1.25rem 4rem; max-width: 46rem;
+    background: #111; color: #e8e8e8;
+    font: 16px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  h1 { font-size: 1.7rem; margin: 0 0 .25rem; letter-spacing: -.01em; }
+  p.lead { color: #a8a8a8; margin-top: 0; }
+  table { width: 100%; border-collapse: collapse; margin: 1.75rem 0 1rem; }
+  th, td { text-align: left; padding: .7rem .5rem; border-bottom: 1px solid #2a2a2a;
+            vertical-align: top; }
+  th { font-size: .78rem; text-transform: uppercase; letter-spacing: .06em; color: #9a9a9a; }
+  a { color: #7fc8ff; }
+  .file { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .85rem;
+           color: #cfcfcf; word-break: break-all; }
+  .note { color: #9a9a9a; font-size: .88rem; }
+  h2 { font-size: 1.15rem; margin: 2.5rem 0 .5rem; letter-spacing: -.01em; }
+  ul { padding-left: 1.25rem; margin: .5rem 0; }
+  li { margin: .3rem 0; }
+  strong { color: #fff; }
+  code, kbd { background: #1c1c1c; padding: .1rem .3rem; border-radius: 4px; }
+  kbd { font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+         font-size: .85em; color: #e8e8e8; border: 1px solid #333; }
+  pre { background: #1c1c1c; padding: .8rem 1rem; border-radius: 6px;
+         overflow-x: auto; }
+  pre code { background: none; padding: 0; }
+  img { max-width: 100%; height: auto; }
+  hr { border: 0; border-top: 1px solid #2a2a2a; margin: 2rem 0; }
+  footer { margin-top: 2.5rem; color: #7d7d7d; font-size: .85rem; }
+</style>
+</head>
+<body>
+<h1>QtWatchAllVideos</h1>
+<p class="lead">Watch all the videos in a web page, back-to-back, without the site
+chrome around them. <a href="https://github.com/SnoutFirst/QtWatchAllVideos">Source code</a>.</p>
+
+<table>
+  <tr><th>Platform</th><th>Download</th><th>Notes</th></tr>
+  <tr><td><strong>Windows</strong><br><span class="note">x64</span></td><td><a class="file" href="https://github.com/SnoutFirst/QtWatchAllVideos/releases/download/ci-latest/QtWatchAllVideos-windows-x64.zip">QtWatchAllVideos-windows-x64.zip</a><br><span class="note">151.2 MiB</span></td><td class="note">Unpack the .zip anywhere and run QtWatchAllVideos.exe.</td></tr>
+  <tr><td><strong>macOS</strong><br><span class="note">arm64</span></td><td><a class="file" href="https://github.com/SnoutFirst/QtWatchAllVideos/releases/download/ci-latest/QtWatchAllVideos-macos-arm64.zip">QtWatchAllVideos-macos-arm64.zip</a><br><span class="note">229.8 MiB</span></td><td class="note">Unpack the .zip and drag QtWatchAllVideos.app wherever you like. It is unsigned, so the first launch needs right-click → Open (or <code>xattr -dr com.apple.quarantine QtWatchAllVideos.app</code>).</td></tr>
+  <tr><td><strong>Linux</strong><br><span class="note">x86_64</span></td><td><a class="file" href="https://github.com/SnoutFirst/QtWatchAllVideos/releases/download/ci-latest/QtWatchAllVideos-linux-x86_64.AppImage">QtWatchAllVideos-linux-x86_64.AppImage</a><br><span class="note">147.7 MiB</span></td><td class="note">Make the AppImage executable and run it; nothing needs to be installed.</td></tr>
+</table>
+
+<h2>What it's for</h2>
+<p>Its primary intended usage is browsing <strong>4chan <code>/gif/</code></strong> threads — where a thread is basically a long list of <code>.webm</code> and <code>.gif</code> links and you just want to sit back and let them play.</p>
+<p>That said, the extraction is deliberately generic: <strong>it will work on any site that serves its videos as plain <code>&lt;video&gt;</code> / <code>&lt;source&gt;</code> elements or as links ending in a video extension</strong> (<code>.webm</code>, <code>.mp4</code>, <code>.gif</code>, <code>.mov</code>, <code>.mkv</code>, <code>.ogg</code>, and friends, plus the usual legacy formats).</p>
+<h2>What it will <em>not</em> do</h2>
+<p>It does <strong>not</strong> execute a site's player logic. Extraction is done on the static HTML only, so it <strong>won't work on sites that use fancy JavaScript players to load their videos</strong> — YouTube is the obvious example, but plenty of others are in the same boat (anything with blob/MSE streaming, DRM, or an API-driven player).</p>
+<h2>CAPTCHAs</h2>
+<p>It <strong>can</strong> get past a Cloudflare or CAPTCHA interstitial — but not on its own. The real page loads in the embedded browser first, and you pass the challenge by hand; the video scan then runs against the page you ended up on. There is no solver, no cookie farming and no headless trickery: the human does the one bit that needs a human, and everything after that is automatic.</p>
+<h2>Features</h2>
+<ul>
+  <li><strong>Watch all videos in order</strong> — every match is collected from the page (deduplicated) and played sequentially, advancing automatically when each one ends.</li>
+  <li><strong>Play order</strong> — Forward (default), <strong>Shuffled</strong>, or <strong>Reversed</strong>, chosen from the drop-down arrow next to the <em>Watch All Videos</em> button (<kbd>Ctrl</kbd>+<kbd>S</kbd> / <kbd>Ctrl</kbd>+<kbd>R</kbd>), or from the URL field's right-click menu.</li>
+  <li><strong>Animated GIF support</strong> — <code>.gif</code> files are downloaded and played as animated GIFs with proper scaling. A GIF that loops for more than a few seconds is treated as "finished" and auto-advances to the next video.</li>
+  <li><strong>Resume where you left off</strong> — recent history is saved <strong>locally</strong> (per thread URL, in a <code>QSettings</code> INI file under the platform's app-data directory), so re-opening a thread picks up at the last video you were watching. History entries older than a year are pruned automatically.</li>
+  <li><strong>Minimal, out-of-the-way UI</strong> — the controls panel and the mouse cursor hide themselves after 1.5 seconds of inactivity and come back as soon as you move the mouse.</li>
+  <li><strong>Single click to pause, double click for fullscreen</strong> — click anywhere on the video to pause/resume; double-click (or <kbd>F</kbd>) toggles fullscreen.</li>
+  <li><strong>Keyboard shortcuts</strong>
+    <ul>
+      <li><kbd>Space</kbd> — play / pause</li>
+      <li><kbd>N</kbd> or <kbd>Enter</kbd> — next video</li>
+      <li><kbd>P</kbd> — previous video</li>
+      <li><kbd>←</kbd> — jump back 5 seconds (stops at the start of the video)</li>
+      <li><kbd>→</kbd> — jump forward 5 seconds (past the end, it moves on to the next video)</li>
+      <li><kbd>M</kbd> — mute / unmute</li>
+      <li><kbd>F</kbd> — toggle fullscreen</li>
+      <li><kbd>Esc</kbd> — leave fullscreen</li>
+    </ul>
+  </li>
+  <li><strong>Previous / Next buttons</strong> plus a <code>current / total</code> counter.</li>
+  <li><strong>Crazy-clicking friendly</strong> — a small race guard keeps an auto-advance and a panicked <em>Next</em> click from skipping a video. Spamming <em>Next</em> still works at full speed.</li>
+  <li><strong>Interruptible downloads</strong> — switching videos while a GIF is still downloading aborts the pending transfer instead of letting the old one pop up later.</li>
+  <li><strong>Remembers your window</strong> — size and position are restored on the next launch (maximized on first run).</li>
+</ul>
+
+<footer>
+  Built from <code>main</code> at commit <code>56686bb</code> by GitHub Actions.
+  The archives are attached to the
+  <a href="https://github.com/SnoutFirst/QtWatchAllVideos/releases/tag/ci-latest">rolling CI release</a>
+  because GitHub Pages refuses files over 100&nbsp;MB. Older builds are kept as
+  workflow artifacts, and tagged versions also get a GitHub Release each.
+</footer>
+</body>
+</html>
