@@ -21,10 +21,13 @@ are stable across builds).
 from __future__ import annotations
 
 import html
+import os
 import sys
 from pathlib import Path
 
-REPO = "SnoutFirst/QtWatchAllVideos2"
+# GitHub Actions sets GITHUB_REPOSITORY; the literal is only a fallback for a
+# manual run, so renaming the repository does not need a code change.
+REPO = os.environ.get("GITHUB_REPOSITORY") or "SnoutFirst/QtWatchAllVideos"
 RELEASE_TAG = "ci-latest"
 
 PLATFORM_ORDER = {"windows": 0, "macos": 1, "linux": 2}
