@@ -102,7 +102,13 @@ QtWatchAllVideos2.exe` for a multi-config build on Windows, or
 
 Installing Qt:
 
-- **Debian / Ubuntu** — `qt6-base-dev qt6-multimedia-dev qt6-webengine-dev`
+- **Debian 13 / Ubuntu 25.04 or newer** — `qt6-base-dev qt6-multimedia-dev
+  qt6-webengine-dev`
+- **Ubuntu 24.04** — its Qt 6.4.2 CMake package is broken (it references a
+  multimedia plugin the distribution does not ship, so `qt_add_executable`
+  fails with `get_target_property() called with non-existent target
+  ::QGstreamerMediaPlugin`); use the official Qt (online installer or
+  `aqtinstall`) there
 - **Fedora** — `qt6-qtbase-devel qt6-qtmultimedia-devel qt6-qtwebengine-devel`
 - **macOS** — `brew install qt` (Homebrew's `qt` formula includes QtWebEngine)
 - **Windows** — the Qt online installer, or `aqtinstall`

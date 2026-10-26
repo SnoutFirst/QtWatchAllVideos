@@ -69,16 +69,19 @@ jobs:
 
       # ---- Qt ----
 
-      - name: Install Qt (Linux)
+      - name: Install build dependencies (Linux)
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y --no-install-recommends \
-            qt6-base-dev qt6-multimedia-dev qt6-webengine-dev \
-            libgl1-mesa-dev ninja-build
+            ninja-build libgl1-mesa-dev libxkbcommon-dev libfontconfig1
 
-      - name: Install Qt (macOS/Windows)
-        if: runner.os != 'Linux'
+      # The official Qt everywhere: Ubuntu 24.04's Qt 6.4.2 CMake package
+      # references a multimedia plugin that the distribution does not ship
+      # (get_target_property(): non-existent target ::QGstreamerMediaPlugin), so
+      # the distribution Qt cannot configure this project. aqt also means the
+      # same Qt version on all three platforms.
+      - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
           version: ${{ env.QT_VERSION }}
@@ -139,7 +142,7 @@ jobs:
             "$base/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage"
           chmod +x linuxdeploy linuxdeploy-plugin-qt
 
-          export QMAKE=/usr/bin/qmake6
+          export QMAKE="$(command -v qmake)"
           export APPIMAGE_EXTRACT_AND_RUN=1
           export NO_STRIP=1
           ./linuxdeploy --appdir packaging/appdir --plugin qt \
