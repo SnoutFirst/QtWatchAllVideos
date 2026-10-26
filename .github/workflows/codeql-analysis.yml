@@ -50,19 +50,17 @@ jobs:
     steps:
     - uses: actions/checkout@v6
 
-    - name: Setup Cache
-      uses: ./.github/actions/setup_cache
-      with:
-        compiler: ${{ matrix.compiler }}
-        build_type: ${{ matrix.build_type }}
-        packaging_maintainer_mode: ${{ matrix.packaging_maintainer_mode }}
-        generator: ${{ matrix.generator }}
-
     - name: Project Name
       uses: cardinalby/export-env-action@v2
       with:
         envFile: '.github/constants.env'
 
+
+    - name: Install Qt
+      run: |
+        sudo apt-get update -qq
+        sudo apt-get install -y --no-install-recommends \
+          qt6-base-dev qt6-multimedia-dev qt6-webengine-dev libgl1-mesa-dev
 
     - name: Setup Cpp
       uses: aminya/setup-cpp@v1

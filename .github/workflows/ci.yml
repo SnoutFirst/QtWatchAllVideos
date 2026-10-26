@@ -1,208 +1,247 @@
 name: ci
+
 on:
-  pull_request:
-  release:
-    types: [published]
   push:
-    tags:
     branches:
       - main
-      - develop
+    tags:
+      - "*"
+  pull_request:
+  workflow_dispatch:
 
 env:
-  CLANG_TIDY_VERSION: "19.1.1"
-  VERBOSE: 1
-
+  # Qt from aqtinstall (macOS/Windows) or the distribution (Linux)
+  QT_VERSION: 6.8.3
+  QT_MODULES: "qtmultimedia qtwebengine qtwebchannel qtpositioning"
 
 jobs:
-  Test:
-    name: ${{matrix.os}} ${{matrix.compiler}} ${{matrix.build_type}} ${{matrix.packaging_maintainer_mode == 'ON' && '(maintainer mode)' || ''}}
+  build:
+    name: ${{ matrix.os }} ${{ matrix.compiler }} ${{ matrix.build_type }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
-
-      # Recommendations:
-      #   * support at least 2 operating systems
-      #   * support at least 2 compilers
-      #   * make sure all supported configurations for your project are built
-      #
-      # Disable/enable builds in this list to meet the above recommendations
-      # and your own projects needs
       matrix:
-        os:
-          - ubuntu-latest
-          - macos-latest
-          - windows-latest
-        compiler:
-          # you can specify the version after `-` like "llvm-15.0.2".
-          - llvm-19.1.1
-          - gcc-14
-        generator:
-          - "Ninja Multi-Config"
-        build_type:
-          - Release
-          - Debug
-        packaging_maintainer_mode:
-          - ON
-          - OFF
-        build_shared:
-          - OFF
-
-        exclude:
-          # mingw is determined by this author to be too buggy to support
-          - os: windows-latest
-            compiler: gcc-14
-
         include:
-          # Add appropriate variables for gcov version required. This will intentionally break
-          # if you try to use a compiler that does not have gcov set
-          - compiler: gcc-14
-            gcov_executable: gcov-14
-            enable_ipo: On
-
-          - compiler: llvm-19.1.1
-            enable_ipo: Off
-            gcov_executable: "llvm-cov gcov"
-
-          - os: macos-latest
-            enable_ipo: Off
-
-          # Set up preferred package generators, for given build configurations
-          - build_type: Release
-            packaging_maintainer_mode: On
-            package_generator: TBZ2
-
-          # This exists solely to make sure a non-multiconfig build works
-          - os: ubuntu-latest
-            compiler: gcc-14
-            generator: "Unix Makefiles"
+          - os: ubuntu-24.04
+            compiler: gcc
+            cc: gcc
+            cxx: g++
+            generator: Ninja
             build_type: Debug
-            gcov_executable: gcov-14
-            packaging_maintainer_mode: On
-            enable_ipo: Off
-
-          # Windows msvc builds
-          - os: windows-latest
-            compiler: msvc
-            generator: "Visual Studio 17 2022"
-            build_type: Debug
-            packaging_maintainer_mode: On
-            enable_ipo: On
-
-          - os: windows-latest
-            compiler: msvc
-            generator: "Visual Studio 17 2022"
+          - os: ubuntu-24.04
+            compiler: gcc
+            cc: gcc
+            cxx: g++
+            generator: Ninja
             build_type: Release
-            packaging_maintainer_mode: On
-            enable_ipo: On
-
-          - os: windows-latest
+          - os: ubuntu-24.04
+            compiler: clang
+            cc: clang
+            cxx: clang++
+            generator: Ninja
+            build_type: Debug
+          - os: ubuntu-24.04
+            compiler: clang
+            cc: clang
+            cxx: clang++
+            generator: Ninja
+            build_type: Release
+          # macos-14 is Apple Silicon; the aqt Qt build there is arm64
+          - os: macos-14
+            compiler: appleclang
+            generator: Ninja
+            build_type: Debug
+          - os: macos-14
+            compiler: appleclang
+            generator: Ninja
+            build_type: Release
+          - os: windows-2022
             compiler: msvc
             generator: "Visual Studio 17 2022"
             build_type: Debug
-            packaging_maintainer_mode: Off
-
-          - os: windows-latest
+          - os: windows-2022
             compiler: msvc
             generator: "Visual Studio 17 2022"
             build_type: Release
-            packaging_maintainer_mode: Off
-            package_generator: ZIP
-
-          - os: windows-latest
-            compiler: msvc
-            generator: "Visual Studio 17 2022"
-            build_type: Release
-            packaging_maintainer_mode: On
-            enable_ipo: On
-            build_shared: On
-
 
     steps:
-      - name: Check for llvm version mismatches
-        if: ${{ contains(matrix.compiler, 'llvm') && !contains(matrix.compiler, env.CLANG_TIDY_VERSION) }}
-        uses: actions/github-script@v9
-        with:
-          script: |
-            core.setFailed('There is a mismatch between configured llvm compiler and clang-tidy version chosen')
-
       - uses: actions/checkout@v6
 
-      - name: Setup Cache
-        uses: ./.github/actions/setup_cache
-        with:
-          compiler: ${{ matrix.compiler }}
-          build_type: ${{ matrix.build_type }}
-          packaging_maintainer_mode: ${{ matrix.packaging_maintainer_mode }}
-          generator: ${{ matrix.generator }}
+      # ---- Qt ----
 
-      - name: Project Name
-        uses: cardinalby/export-env-action@v2
-        with:
-          envFile: '.github/constants.env'
-
-
-      - name: Setup Cpp
-        uses: aminya/setup-cpp@v1
-        with:
-          compiler: ${{ matrix.compiler }}
-          vcvarsall: ${{ contains(matrix.os, 'windows' )}}
-
-          cmake: true
-          ninja: true
-          vcpkg: false
-          ccache: true
-          clangtidy: ${{ env.CLANG_TIDY_VERSION }}
-
-
-          cppcheck: true
-
-          gcovr: true
-          opencppcoverage: true
-
-      - name: Configure CMake
+      - name: Install Qt (Linux)
+        if: runner.os == 'Linux'
         run: |
-          cmake -S . -B ./build -G "${{matrix.generator}}" -D${{ env.PROJECT_NAME }}_ENABLE_IPO=${{matrix.enable_ipo }} -DCMAKE_BUILD_TYPE:STRING=${{matrix.build_type}} -D${{ env.PROJECT_NAME }}_PACKAGING_MAINTAINER_MODE:BOOL=${{matrix.packaging_maintainer_mode}} -D${{ env.PROJECT_NAME }}_ENABLE_COVERAGE:BOOL=${{ matrix.build_type == 'Debug' }} -DGIT_SHA:STRING=${{ github.sha }}
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            qt6-base-dev qt6-multimedia-dev qt6-webengine-dev \
+            libgl1-mesa-dev ninja-build
+
+      - name: Install Qt (macOS/Windows)
+        if: runner.os != 'Linux'
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: ${{ env.QT_VERSION }}
+          modules: ${{ env.QT_MODULES }}
+          cache: true
+
+      - name: Set up MSVC environment
+        if: matrix.compiler == 'msvc'
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Install ninja (macOS)
+        if: runner.os == 'macOS'
+        run: brew install ninja
+
+      # ---- build / test ----
+
+      - name: Configure
+        shell: bash
+        run: |
+          # single-config generators take the build type at configure time, the
+          # Visual Studio generator at build time
+          args=(-DQtWatchAllVideos2_ENABLE_IPO=OFF)
+          if [ "${{ matrix.generator }}" = "Ninja" ]; then
+            args+=("-DCMAKE_BUILD_TYPE=${{ matrix.build_type }}")
+          fi
+          if [ -n "${{ matrix.cc }}" ]; then
+            args+=("-DCMAKE_C_COMPILER=${{ matrix.cc }}" "-DCMAKE_CXX_COMPILER=${{ matrix.cxx }}")
+          fi
+          if [ -n "${CMAKE_PREFIX_PATH:-}" ]; then
+            args+=("-DCMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH")
+          fi
+          cmake -S . -B build -G "${{ matrix.generator }}" "${args[@]}"
 
       - name: Build
-        # Execute the build.  You can specify a specific target with "--target <NAME>"
-        run: |
-          cmake --build ./build --config ${{matrix.build_type}}
+        shell: bash
+        run: cmake --build build --config ${{ matrix.build_type }} --parallel
 
-      - name: Unix - Test and coverage
-        if: runner.os != 'Windows'
-        working-directory: ./build
-        # Execute tests defined by the CMake configuration.
-        # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
-        run: |
-          ctest -C ${{matrix.build_type}}
-          gcovr -j ${{env.nproc}} --root ../ --print-summary --xml-pretty --xml coverage.xml . --gcov-executable '${{ matrix.gcov_executable }}'
+      - name: Test
+        shell: bash
+        run: ctest --test-dir build -C ${{ matrix.build_type }} --output-on-failure
 
-      - name: Windows - Test and coverage
-        if: runner.os == 'Windows'
-        working-directory: ./build
-        run: |
-          OpenCppCoverage.exe --export_type cobertura:coverage.xml --cover_children -- ctest -C ${{matrix.build_type}}
+      # ---- package (Release only: these are what gets published) ----
 
-      - name: CPack
-        if: matrix.package_generator != ''
-        working-directory: ./build
+      - name: Package (Linux AppImage)
+        if: runner.os == 'Linux' && matrix.build_type == 'Release'
+        shell: bash
         run: |
-          cpack -C ${{matrix.build_type}} -G ${{matrix.package_generator}}
+          set -euo pipefail
+          mkdir -p packaging/appdir/usr/bin
+          cp build/src/app/QtWatchAllVideos2 packaging/appdir/usr/bin/
 
-      - name: Publish Tagged Release
-        uses: softprops/action-gh-release@v3
-        if: ${{ startsWith(github.ref, 'refs/tags/') && matrix.package_generator != '' }}
+          base=https://github.com/linuxdeploy
+          curl -sSL -o linuxdeploy \
+            "$base/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage"
+          curl -sSL -o linuxdeploy-plugin-qt \
+            "$base/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage"
+          chmod +x linuxdeploy linuxdeploy-plugin-qt
+
+          export QMAKE=/usr/bin/qmake6
+          export APPIMAGE_EXTRACT_AND_RUN=1
+          export NO_STRIP=1
+          ./linuxdeploy --appdir packaging/appdir --plugin qt \
+            --executable packaging/appdir/usr/bin/QtWatchAllVideos2 \
+            --desktop-file packaging/linux/QtWatchAllVideos2.desktop \
+            --icon-file packaging/linux/QtWatchAllVideos2.svg \
+            --output appimage
+
+          sha=$(git rev-parse --short=7 HEAD)
+          mv QtWatchAllVideos2-x86_64.AppImage \
+             "QtWatchAllVideos2-${sha}-linux-x86_64.AppImage"
+
+      - name: Package (macOS .app)
+        if: runner.os == 'macOS' && matrix.build_type == 'Release'
+        shell: bash
+        run: |
+          set -euo pipefail
+          app=build/src/app/QtWatchAllVideos2.app
+          macdeployqt "$app" -always-overwrite
+
+          sha=$(git rev-parse --short=7 HEAD)
+          arch=$(uname -m)
+          ditto -c -k --sequesterRsrc --keepParent "$app" \
+            "QtWatchAllVideos2-${sha}-macos-${arch}.zip"
+
+      - name: Package (Windows exe + Qt runtime)
+        if: runner.os == 'Windows' && matrix.build_type == 'Release'
+        shell: pwsh
+        run: |
+          $out = "build/src/app/Release"
+          windeployqt --no-translations --release "$out/QtWatchAllVideos2.exe"
+          $sha = git rev-parse --short=7 HEAD
+          Compress-Archive -Path "$out/*" -DestinationPath "QtWatchAllVideos2-$sha-windows-x64.zip"
+
+      - name: Upload packaged binary
+        if: matrix.build_type == 'Release' && runner.os != 'Windows'
+        uses: actions/upload-artifact@v4
         with:
-          files: |
-            build/*-*${{ matrix.build_type }}*-*.*
+          name: binaries-${{ runner.os }}
+          path: |
+            QtWatchAllVideos2-*.AppImage
+            QtWatchAllVideos2-*.zip
+          if-no-files-found: error
 
-
-      - name: Publish to codecov
-        uses: codecov/codecov-action@v5
+      - name: Upload packaged binary (Windows)
+        if: matrix.build_type == 'Release' && runner.os == 'Windows'
+        uses: actions/upload-artifact@v4
         with:
-          fail_ci_if_error: true # we weren't posting previously
-          flags: ${{ runner.os }}
-          name: ${{ runner.os }}-coverage
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./build/coverage.xml
+          name: binaries-Windows
+          path: QtWatchAllVideos2-*.zip
+          if-no-files-found: error
+
+  # ---- publish ----
+
+  pages:
+    name: Publish binaries to GitHub Pages
+    needs: build
+    if: >-
+      github.event_name == 'push' &&
+      (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/'))
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Download packaged binaries
+        uses: actions/download-artifact@v4
+        with:
+          pattern: binaries-*
+          path: downloads
+          merge-multiple: true
+
+      - name: Generate the download page
+        run: python3 .github/scripts/make_download_page.py downloads site "${{ github.sha }}" "${{ github.ref_name }}"
+
+      - name: Publish to gh-pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./site
+          # a single orphan commit: the ~350 MB of binaries must not accumulate
+          # in the branch history on every push
+          force_orphan: true
+          user_name: SnoutFirst
+          user_email: snoutfirst@protonmail.com
+
+  release-assets:
+    name: Attach binaries to the GitHub Release
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - name: Download packaged binaries
+        uses: actions/download-artifact@v4
+        with:
+          pattern: binaries-*
+          path: downloads
+          merge-multiple: true
+
+      - uses: softprops/action-gh-release@v3
+        with:
+          files: downloads/*

@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=QtWatchAllVideos2
+GenericName=Web video playlist player
+Comment=Watch all videos in a web page back-to-back
+Exec=QtWatchAllVideos2
+Icon=QtWatchAllVideos2
+Categories=AudioVideo;Player;
+Terminal=false
+StartupWMClass=QtWatchAllVideos2
