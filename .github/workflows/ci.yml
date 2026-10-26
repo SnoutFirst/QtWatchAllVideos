@@ -69,7 +69,7 @@ jobs:
             package: true
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       # ---- Qt ----
 
@@ -211,7 +211,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Download packaged binaries
         uses: actions/download-artifact@v4

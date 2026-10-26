@@ -48,7 +48,7 @@ jobs:
 
 
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
 
     - name: Project Name
       uses: cardinalby/export-env-action@v2
