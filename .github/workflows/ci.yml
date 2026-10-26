@@ -12,7 +12,7 @@ on:
 env:
   # Qt from aqtinstall (macOS/Windows) or the distribution (Linux)
   QT_VERSION: 6.8.3
-  QT_MODULES: "qtmultimedia qtwebengine qtwebchannel qtpositioning"
+  QT_MODULES: "qtmultimedia qtwebengine qtwebchannel qtpositioning qtserialport"
 
 jobs:
   build:
@@ -132,7 +132,7 @@ jobs:
       # ---- package (Release only: these are what gets published) ----
 
       - name: Package (Linux AppImage)
-        if: matrix.package
+        if: matrix.package && runner.os == 'Linux'
         shell: bash
         run: |
           set -euo pipefail
@@ -160,7 +160,7 @@ jobs:
              "QtWatchAllVideos2-${sha}-linux-x86_64.AppImage"
 
       - name: Package (macOS .app)
-        if: matrix.package
+        if: matrix.package && runner.os == 'macOS'
         shell: bash
         run: |
           set -euo pipefail
@@ -173,7 +173,7 @@ jobs:
             "QtWatchAllVideos2-${sha}-macos-${arch}.zip"
 
       - name: Package (Windows exe + Qt runtime)
-        if: matrix.package
+        if: matrix.package && runner.os == 'Windows'
         shell: pwsh
         run: |
           $out = "build/src/app/Release"
