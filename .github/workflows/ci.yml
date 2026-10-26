@@ -34,6 +34,7 @@ jobs:
             cxx: g++
             generator: Ninja
             build_type: Release
+            package: true
           - os: ubuntu-24.04
             compiler: clang
             cc: clang
@@ -46,6 +47,7 @@ jobs:
             cxx: clang++
             generator: Ninja
             build_type: Release
+            # the AppImage from the GCC job is the one that gets published
           # macos-14 is Apple Silicon; the aqt Qt build there is arm64
           - os: macos-14
             compiler: appleclang
@@ -55,6 +57,7 @@ jobs:
             compiler: appleclang
             generator: Ninja
             build_type: Release
+            package: true
           - os: windows-2022
             compiler: msvc
             generator: "Visual Studio 17 2022"
@@ -63,6 +66,7 @@ jobs:
             compiler: msvc
             generator: "Visual Studio 17 2022"
             build_type: Release
+            package: true
 
     steps:
       - uses: actions/checkout@v6
@@ -128,7 +132,7 @@ jobs:
       # ---- package (Release only: these are what gets published) ----
 
       - name: Package (Linux AppImage)
-        if: runner.os == 'Linux' && matrix.build_type == 'Release'
+        if: matrix.package
         shell: bash
         run: |
           set -euo pipefail
@@ -156,7 +160,7 @@ jobs:
              "QtWatchAllVideos2-${sha}-linux-x86_64.AppImage"
 
       - name: Package (macOS .app)
-        if: runner.os == 'macOS' && matrix.build_type == 'Release'
+        if: matrix.package
         shell: bash
         run: |
           set -euo pipefail
@@ -169,7 +173,7 @@ jobs:
             "QtWatchAllVideos2-${sha}-macos-${arch}.zip"
 
       - name: Package (Windows exe + Qt runtime)
-        if: runner.os == 'Windows' && matrix.build_type == 'Release'
+        if: matrix.package
         shell: pwsh
         run: |
           $out = "build/src/app/Release"
@@ -178,7 +182,7 @@ jobs:
           Compress-Archive -Path "$out/*" -DestinationPath "QtWatchAllVideos2-$sha-windows-x64.zip"
 
       - name: Upload packaged binary
-        if: matrix.build_type == 'Release' && runner.os != 'Windows'
+        if: matrix.package && runner.os != 'Windows'
         uses: actions/upload-artifact@v4
         with:
           name: binaries-${{ runner.os }}
@@ -188,7 +192,7 @@ jobs:
           if-no-files-found: error
 
       - name: Upload packaged binary (Windows)
-        if: matrix.build_type == 'Release' && runner.os == 'Windows'
+        if: matrix.package && runner.os == 'Windows'
         uses: actions/upload-artifact@v4
         with:
           name: binaries-Windows
