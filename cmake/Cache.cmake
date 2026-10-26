@@ -1,5 +1,5 @@
 # Enable cache if available
-function(QtWatchAllVideos2_enable_cache)
+function(QtWatchAllVideos_enable_cache)
   set(CACHE_OPTION
       "ccache"
       CACHE STRING "Compiler cache to be used")

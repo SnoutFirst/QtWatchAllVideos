@@ -1,4 +1,4 @@
-# QtWatchAllVideos2
+# QtWatchAllVideos
 
 A tiny Qt desktop app that watches **all** the videos in a web page, one after
 another, without any of the surrounding site chrome.
@@ -12,7 +12,7 @@ viewer with a minimal overlay of controls.
 Prebuilt Windows, macOS and Linux binaries are published to GitHub Pages by CI
 on every push to `main`:
 
-**<https://snoutfirst.github.io/QtWatchAllVideos2/>**
+**<https://snoutfirst.github.io/QtWatchAllVideos/>**
 
 Each archive is self-contained (Qt bundled with `windeployqt` / `macdeployqt` /
 `linuxdeploy`), so nothing needs to be installed first.
@@ -96,9 +96,9 @@ cmake --build build
 ctest --test-dir build
 ```
 
-Run it with `./build/src/app/QtWatchAllVideos2` (`build\src\app\Release\
-QtWatchAllVideos2.exe` for a multi-config build on Windows, or
-`build/src/app/QtWatchAllVideos2.app` on macOS).
+Run it with `./build/src/app/QtWatchAllVideos` (`build\src\app\Release\
+QtWatchAllVideos.exe` for a multi-config build on Windows, or
+`build/src/app/QtWatchAllVideos.app` on macOS).
 
 Installing Qt:
 
@@ -116,7 +116,7 @@ Installing Qt:
   qtwebengine qtwebchannel qtpositioning`)
 
 CMake presets for the common compiler/platform combinations live in
-`CMakePresets.json`; the template's build options (`QtWatchAllVideos2_ENABLE_*`)
+`CMakePresets.json`; the template's build options (`QtWatchAllVideos_ENABLE_*`)
 are documented in [README_building.md](README_building.md) and
 [README_design.md](README_design.md).
 
@@ -128,15 +128,15 @@ are documented in [README_building.md](README_building.md) and
 
 | Platform | Packaged by | Archive |
 | --- | --- | --- |
-| Linux | `linuxdeploy` + `linuxdeploy-plugin-qt` | `QtWatchAllVideos2-<sha>-linux-x86_64.AppImage` |
-| macOS | `macdeployqt` | `QtWatchAllVideos2-<sha>-macos-<arch>.zip` |
-| Windows | `windeployqt` | `QtWatchAllVideos2-<sha>-windows-x64.zip` |
+| Linux | `linuxdeploy` + `linuxdeploy-plugin-qt` | `QtWatchAllVideos-<sha>-linux-x86_64.AppImage` |
+| macOS | `macdeployqt` | `QtWatchAllVideos-<sha>-macos-<arch>.zip` |
+| Windows | `windeployqt` | `QtWatchAllVideos-<sha>-windows-x64.zip` |
 
 On every push to `main` the archives are attached to a rolling `ci-latest`
-GitHub Release with stable names (`QtWatchAllVideos2-linux-x86_64.AppImage`,
+GitHub Release with stable names (`QtWatchAllVideos-linux-x86_64.AppImage`,
 `...-macos-arm64.zip`, `...-windows-x64.zip`), and
 `.github/scripts/make_download_page.py` regenerates the download page at
-<https://snoutfirst.github.io/QtWatchAllVideos2/> that links to them, showing the
+<https://snoutfirst.github.io/QtWatchAllVideos/> that links to them, showing the
 commit the binaries were built from.
 
 The blobs live on the Release rather than on Pages because GitHub refuses any

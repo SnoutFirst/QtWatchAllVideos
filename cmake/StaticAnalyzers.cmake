@@ -1,4 +1,4 @@
-macro(QtWatchAllVideos2_enable_cppcheck WARNINGS_AS_ERRORS CPPCHECK_OPTIONS)
+macro(QtWatchAllVideos_enable_cppcheck WARNINGS_AS_ERRORS CPPCHECK_OPTIONS)
   find_program(CPPCHECK cppcheck)
   if(CPPCHECK)
 
@@ -51,7 +51,7 @@ macro(QtWatchAllVideos2_enable_cppcheck WARNINGS_AS_ERRORS CPPCHECK_OPTIONS)
   endif()
 endmacro()
 
-macro(QtWatchAllVideos2_enable_clang_tidy target WARNINGS_AS_ERRORS)
+macro(QtWatchAllVideos_enable_clang_tidy target WARNINGS_AS_ERRORS)
 
   find_program(CLANGTIDY clang-tidy)
   if(CLANGTIDY)
@@ -104,7 +104,7 @@ macro(QtWatchAllVideos2_enable_clang_tidy target WARNINGS_AS_ERRORS)
   endif()
 endmacro()
 
-macro(QtWatchAllVideos2_enable_include_what_you_use)
+macro(QtWatchAllVideos_enable_include_what_you_use)
   find_program(INCLUDE_WHAT_YOU_USE include-what-you-use)
   if(INCLUDE_WHAT_YOU_USE)
     set(CMAKE_CXX_INCLUDE_WHAT_YOU_USE ${INCLUDE_WHAT_YOU_USE})

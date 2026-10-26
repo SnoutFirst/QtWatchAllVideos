@@ -6,7 +6,7 @@ include(CheckCXXCompilerFlag)
 include(CheckCXXSourceCompiles)
 
 
-macro(QtWatchAllVideos2_supports_sanitizers)
+macro(QtWatchAllVideos_supports_sanitizers)
   if((CMAKE_CXX_COMPILER_ID MATCHES ".*Clang.*" OR CMAKE_CXX_COMPILER_ID MATCHES ".*GNU.*") AND NOT WIN32)
 
     message(STATUS "Sanity checking UndefinedBehaviorSanitizer, it should be supported on this platform")
@@ -53,107 +53,107 @@ macro(QtWatchAllVideos2_supports_sanitizers)
   endif()
 endmacro()
 
-macro(QtWatchAllVideos2_setup_options)
-  option(QtWatchAllVideos2_ENABLE_HARDENING "Enable hardening" ON)
-  option(QtWatchAllVideos2_ENABLE_COVERAGE "Enable coverage reporting" OFF)
+macro(QtWatchAllVideos_setup_options)
+  option(QtWatchAllVideos_ENABLE_HARDENING "Enable hardening" ON)
+  option(QtWatchAllVideos_ENABLE_COVERAGE "Enable coverage reporting" OFF)
   cmake_dependent_option(
-    QtWatchAllVideos2_ENABLE_GLOBAL_HARDENING
+    QtWatchAllVideos_ENABLE_GLOBAL_HARDENING
     "Attempt to push hardening options to built dependencies"
     ON
-    QtWatchAllVideos2_ENABLE_HARDENING
+    QtWatchAllVideos_ENABLE_HARDENING
     OFF)
 
-  QtWatchAllVideos2_supports_sanitizers()
+  QtWatchAllVideos_supports_sanitizers()
 
-  if(NOT PROJECT_IS_TOP_LEVEL OR QtWatchAllVideos2_PACKAGING_MAINTAINER_MODE)
-    option(QtWatchAllVideos2_ENABLE_IPO "Enable IPO/LTO" OFF)
-    option(QtWatchAllVideos2_WARNINGS_AS_ERRORS "Treat Warnings As Errors" OFF)
-    option(QtWatchAllVideos2_ENABLE_SANITIZER_ADDRESS "Enable address sanitizer" OFF)
-    option(QtWatchAllVideos2_ENABLE_SANITIZER_LEAK "Enable leak sanitizer" OFF)
-    option(QtWatchAllVideos2_ENABLE_SANITIZER_UNDEFINED "Enable undefined sanitizer" OFF)
-    option(QtWatchAllVideos2_ENABLE_SANITIZER_THREAD "Enable thread sanitizer" OFF)
-    option(QtWatchAllVideos2_ENABLE_SANITIZER_MEMORY "Enable memory sanitizer" OFF)
-    option(QtWatchAllVideos2_ENABLE_UNITY_BUILD "Enable unity builds" OFF)
-    option(QtWatchAllVideos2_ENABLE_CLANG_TIDY "Enable clang-tidy" OFF)
-    option(QtWatchAllVideos2_ENABLE_CPPCHECK "Enable cpp-check analysis" OFF)
-    option(QtWatchAllVideos2_ENABLE_PCH "Enable precompiled headers" OFF)
-    option(QtWatchAllVideos2_ENABLE_CACHE "Enable ccache" OFF)
+  if(NOT PROJECT_IS_TOP_LEVEL OR QtWatchAllVideos_PACKAGING_MAINTAINER_MODE)
+    option(QtWatchAllVideos_ENABLE_IPO "Enable IPO/LTO" OFF)
+    option(QtWatchAllVideos_WARNINGS_AS_ERRORS "Treat Warnings As Errors" OFF)
+    option(QtWatchAllVideos_ENABLE_SANITIZER_ADDRESS "Enable address sanitizer" OFF)
+    option(QtWatchAllVideos_ENABLE_SANITIZER_LEAK "Enable leak sanitizer" OFF)
+    option(QtWatchAllVideos_ENABLE_SANITIZER_UNDEFINED "Enable undefined sanitizer" OFF)
+    option(QtWatchAllVideos_ENABLE_SANITIZER_THREAD "Enable thread sanitizer" OFF)
+    option(QtWatchAllVideos_ENABLE_SANITIZER_MEMORY "Enable memory sanitizer" OFF)
+    option(QtWatchAllVideos_ENABLE_UNITY_BUILD "Enable unity builds" OFF)
+    option(QtWatchAllVideos_ENABLE_CLANG_TIDY "Enable clang-tidy" OFF)
+    option(QtWatchAllVideos_ENABLE_CPPCHECK "Enable cpp-check analysis" OFF)
+    option(QtWatchAllVideos_ENABLE_PCH "Enable precompiled headers" OFF)
+    option(QtWatchAllVideos_ENABLE_CACHE "Enable ccache" OFF)
   else()
-    option(QtWatchAllVideos2_ENABLE_IPO "Enable IPO/LTO" ON)
-    option(QtWatchAllVideos2_WARNINGS_AS_ERRORS "Treat Warnings As Errors" ON)
-    option(QtWatchAllVideos2_ENABLE_SANITIZER_ADDRESS "Enable address sanitizer" ${SUPPORTS_ASAN})
-    option(QtWatchAllVideos2_ENABLE_SANITIZER_LEAK "Enable leak sanitizer" OFF)
-    option(QtWatchAllVideos2_ENABLE_SANITIZER_UNDEFINED "Enable undefined sanitizer" ${SUPPORTS_UBSAN})
-    option(QtWatchAllVideos2_ENABLE_SANITIZER_THREAD "Enable thread sanitizer" OFF)
-    option(QtWatchAllVideos2_ENABLE_SANITIZER_MEMORY "Enable memory sanitizer" OFF)
-    option(QtWatchAllVideos2_ENABLE_UNITY_BUILD "Enable unity builds" OFF)
+    option(QtWatchAllVideos_ENABLE_IPO "Enable IPO/LTO" ON)
+    option(QtWatchAllVideos_WARNINGS_AS_ERRORS "Treat Warnings As Errors" ON)
+    option(QtWatchAllVideos_ENABLE_SANITIZER_ADDRESS "Enable address sanitizer" ${SUPPORTS_ASAN})
+    option(QtWatchAllVideos_ENABLE_SANITIZER_LEAK "Enable leak sanitizer" OFF)
+    option(QtWatchAllVideos_ENABLE_SANITIZER_UNDEFINED "Enable undefined sanitizer" ${SUPPORTS_UBSAN})
+    option(QtWatchAllVideos_ENABLE_SANITIZER_THREAD "Enable thread sanitizer" OFF)
+    option(QtWatchAllVideos_ENABLE_SANITIZER_MEMORY "Enable memory sanitizer" OFF)
+    option(QtWatchAllVideos_ENABLE_UNITY_BUILD "Enable unity builds" OFF)
     # OFF by default: the template's demo code used to be tidy/cppcheck clean,
     # the Qt application code that replaced it is not (it trips hundreds of
     # style checks such as readability-magic-numbers or misc-include-cleaner,
     # and they are promoted to errors by WARNINGS_AS_ERRORS). Turn them back on
-    # per build with -DQtWatchAllVideos2_ENABLE_CLANG_TIDY=ON once the code is
+    # per build with -DQtWatchAllVideos_ENABLE_CLANG_TIDY=ON once the code is
     # cleaned up.
-    option(QtWatchAllVideos2_ENABLE_CLANG_TIDY "Enable clang-tidy" OFF)
-    option(QtWatchAllVideos2_ENABLE_CPPCHECK "Enable cpp-check analysis" OFF)
-    option(QtWatchAllVideos2_ENABLE_PCH "Enable precompiled headers" OFF)
-    option(QtWatchAllVideos2_ENABLE_CACHE "Enable ccache" ON)
+    option(QtWatchAllVideos_ENABLE_CLANG_TIDY "Enable clang-tidy" OFF)
+    option(QtWatchAllVideos_ENABLE_CPPCHECK "Enable cpp-check analysis" OFF)
+    option(QtWatchAllVideos_ENABLE_PCH "Enable precompiled headers" OFF)
+    option(QtWatchAllVideos_ENABLE_CACHE "Enable ccache" ON)
   endif()
 
   if(NOT PROJECT_IS_TOP_LEVEL)
     mark_as_advanced(
-      QtWatchAllVideos2_ENABLE_IPO
-      QtWatchAllVideos2_WARNINGS_AS_ERRORS
-      QtWatchAllVideos2_ENABLE_SANITIZER_ADDRESS
-      QtWatchAllVideos2_ENABLE_SANITIZER_LEAK
-      QtWatchAllVideos2_ENABLE_SANITIZER_UNDEFINED
-      QtWatchAllVideos2_ENABLE_SANITIZER_THREAD
-      QtWatchAllVideos2_ENABLE_SANITIZER_MEMORY
-      QtWatchAllVideos2_ENABLE_UNITY_BUILD
-      QtWatchAllVideos2_ENABLE_CLANG_TIDY
-      QtWatchAllVideos2_ENABLE_CPPCHECK
-      QtWatchAllVideos2_ENABLE_COVERAGE
-      QtWatchAllVideos2_ENABLE_PCH
-      QtWatchAllVideos2_ENABLE_CACHE)
+      QtWatchAllVideos_ENABLE_IPO
+      QtWatchAllVideos_WARNINGS_AS_ERRORS
+      QtWatchAllVideos_ENABLE_SANITIZER_ADDRESS
+      QtWatchAllVideos_ENABLE_SANITIZER_LEAK
+      QtWatchAllVideos_ENABLE_SANITIZER_UNDEFINED
+      QtWatchAllVideos_ENABLE_SANITIZER_THREAD
+      QtWatchAllVideos_ENABLE_SANITIZER_MEMORY
+      QtWatchAllVideos_ENABLE_UNITY_BUILD
+      QtWatchAllVideos_ENABLE_CLANG_TIDY
+      QtWatchAllVideos_ENABLE_CPPCHECK
+      QtWatchAllVideos_ENABLE_COVERAGE
+      QtWatchAllVideos_ENABLE_PCH
+      QtWatchAllVideos_ENABLE_CACHE)
   endif()
 
 endmacro()
 
-macro(QtWatchAllVideos2_global_options)
-  if(QtWatchAllVideos2_ENABLE_IPO)
+macro(QtWatchAllVideos_global_options)
+  if(QtWatchAllVideos_ENABLE_IPO)
     include(cmake/InterproceduralOptimization.cmake)
-    QtWatchAllVideos2_enable_ipo()
+    QtWatchAllVideos_enable_ipo()
   endif()
 
-  QtWatchAllVideos2_supports_sanitizers()
+  QtWatchAllVideos_supports_sanitizers()
 
-  if(QtWatchAllVideos2_ENABLE_HARDENING AND QtWatchAllVideos2_ENABLE_GLOBAL_HARDENING)
+  if(QtWatchAllVideos_ENABLE_HARDENING AND QtWatchAllVideos_ENABLE_GLOBAL_HARDENING)
     include(cmake/Hardening.cmake)
     if(NOT SUPPORTS_UBSAN 
-       OR QtWatchAllVideos2_ENABLE_SANITIZER_UNDEFINED
-       OR QtWatchAllVideos2_ENABLE_SANITIZER_ADDRESS
-       OR QtWatchAllVideos2_ENABLE_SANITIZER_THREAD
-       OR QtWatchAllVideos2_ENABLE_SANITIZER_LEAK)
+       OR QtWatchAllVideos_ENABLE_SANITIZER_UNDEFINED
+       OR QtWatchAllVideos_ENABLE_SANITIZER_ADDRESS
+       OR QtWatchAllVideos_ENABLE_SANITIZER_THREAD
+       OR QtWatchAllVideos_ENABLE_SANITIZER_LEAK)
       set(ENABLE_UBSAN_MINIMAL_RUNTIME FALSE)
     else()
       set(ENABLE_UBSAN_MINIMAL_RUNTIME TRUE)
     endif()
-    message("${QtWatchAllVideos2_ENABLE_HARDENING} ${ENABLE_UBSAN_MINIMAL_RUNTIME} ${QtWatchAllVideos2_ENABLE_SANITIZER_UNDEFINED}")
-    QtWatchAllVideos2_enable_hardening(QtWatchAllVideos2_options ON ${ENABLE_UBSAN_MINIMAL_RUNTIME})
+    message("${QtWatchAllVideos_ENABLE_HARDENING} ${ENABLE_UBSAN_MINIMAL_RUNTIME} ${QtWatchAllVideos_ENABLE_SANITIZER_UNDEFINED}")
+    QtWatchAllVideos_enable_hardening(QtWatchAllVideos_options ON ${ENABLE_UBSAN_MINIMAL_RUNTIME})
   endif()
 endmacro()
 
-macro(QtWatchAllVideos2_local_options)
+macro(QtWatchAllVideos_local_options)
   if(PROJECT_IS_TOP_LEVEL)
     include(cmake/StandardProjectSettings.cmake)
   endif()
 
-  add_library(QtWatchAllVideos2_warnings INTERFACE)
-  add_library(QtWatchAllVideos2_options INTERFACE)
+  add_library(QtWatchAllVideos_warnings INTERFACE)
+  add_library(QtWatchAllVideos_options INTERFACE)
 
   include(cmake/CompilerWarnings.cmake)
-  QtWatchAllVideos2_set_project_warnings(
-    QtWatchAllVideos2_warnings
-    ${QtWatchAllVideos2_WARNINGS_AS_ERRORS}
+  QtWatchAllVideos_set_project_warnings(
+    QtWatchAllVideos_warnings
+    ${QtWatchAllVideos_WARNINGS_AS_ERRORS}
     ""
     ""
     ""
@@ -163,65 +163,65 @@ macro(QtWatchAllVideos2_local_options)
   # Must configure each target with linker options, we're avoiding setting it globally for now
 
   include(cmake/Sanitizers.cmake)
-  QtWatchAllVideos2_enable_sanitizers(
-    QtWatchAllVideos2_options
-    ${QtWatchAllVideos2_ENABLE_SANITIZER_ADDRESS}
-    ${QtWatchAllVideos2_ENABLE_SANITIZER_LEAK}
-    ${QtWatchAllVideos2_ENABLE_SANITIZER_UNDEFINED}
-    ${QtWatchAllVideos2_ENABLE_SANITIZER_THREAD}
-    ${QtWatchAllVideos2_ENABLE_SANITIZER_MEMORY})
+  QtWatchAllVideos_enable_sanitizers(
+    QtWatchAllVideos_options
+    ${QtWatchAllVideos_ENABLE_SANITIZER_ADDRESS}
+    ${QtWatchAllVideos_ENABLE_SANITIZER_LEAK}
+    ${QtWatchAllVideos_ENABLE_SANITIZER_UNDEFINED}
+    ${QtWatchAllVideos_ENABLE_SANITIZER_THREAD}
+    ${QtWatchAllVideos_ENABLE_SANITIZER_MEMORY})
 
-  set_target_properties(QtWatchAllVideos2_options PROPERTIES UNITY_BUILD ${QtWatchAllVideos2_ENABLE_UNITY_BUILD})
+  set_target_properties(QtWatchAllVideos_options PROPERTIES UNITY_BUILD ${QtWatchAllVideos_ENABLE_UNITY_BUILD})
 
-  if(QtWatchAllVideos2_ENABLE_PCH)
+  if(QtWatchAllVideos_ENABLE_PCH)
     target_precompile_headers(
-      QtWatchAllVideos2_options
+      QtWatchAllVideos_options
       INTERFACE
       <vector>
       <string>
       <utility>)
   endif()
 
-  if(QtWatchAllVideos2_ENABLE_CACHE)
+  if(QtWatchAllVideos_ENABLE_CACHE)
     include(cmake/Cache.cmake)
-    QtWatchAllVideos2_enable_cache()
+    QtWatchAllVideos_enable_cache()
   endif()
 
   include(cmake/StaticAnalyzers.cmake)
-  if(QtWatchAllVideos2_ENABLE_CLANG_TIDY)
-    QtWatchAllVideos2_enable_clang_tidy(QtWatchAllVideos2_options ${QtWatchAllVideos2_WARNINGS_AS_ERRORS})
+  if(QtWatchAllVideos_ENABLE_CLANG_TIDY)
+    QtWatchAllVideos_enable_clang_tidy(QtWatchAllVideos_options ${QtWatchAllVideos_WARNINGS_AS_ERRORS})
   endif()
 
-  if(QtWatchAllVideos2_ENABLE_CPPCHECK)
-    QtWatchAllVideos2_enable_cppcheck(${QtWatchAllVideos2_WARNINGS_AS_ERRORS} "" # override cppcheck options
+  if(QtWatchAllVideos_ENABLE_CPPCHECK)
+    QtWatchAllVideos_enable_cppcheck(${QtWatchAllVideos_WARNINGS_AS_ERRORS} "" # override cppcheck options
     )
   endif()
 
-  if(QtWatchAllVideos2_ENABLE_COVERAGE)
+  if(QtWatchAllVideos_ENABLE_COVERAGE)
     include(cmake/Tests.cmake)
-    QtWatchAllVideos2_enable_coverage(QtWatchAllVideos2_options)
+    QtWatchAllVideos_enable_coverage(QtWatchAllVideos_options)
   endif()
 
-  if(QtWatchAllVideos2_WARNINGS_AS_ERRORS)
+  if(QtWatchAllVideos_WARNINGS_AS_ERRORS)
     check_cxx_compiler_flag("-Wl,--fatal-warnings" LINKER_FATAL_WARNINGS)
     if(LINKER_FATAL_WARNINGS)
       # This is not working consistently, so disabling for now
-      # target_link_options(QtWatchAllVideos2_options INTERFACE -Wl,--fatal-warnings)
+      # target_link_options(QtWatchAllVideos_options INTERFACE -Wl,--fatal-warnings)
     endif()
   endif()
 
-  if(QtWatchAllVideos2_ENABLE_HARDENING AND NOT QtWatchAllVideos2_ENABLE_GLOBAL_HARDENING)
+  if(QtWatchAllVideos_ENABLE_HARDENING AND NOT QtWatchAllVideos_ENABLE_GLOBAL_HARDENING)
     include(cmake/Hardening.cmake)
     if(NOT SUPPORTS_UBSAN 
-       OR QtWatchAllVideos2_ENABLE_SANITIZER_UNDEFINED
-       OR QtWatchAllVideos2_ENABLE_SANITIZER_ADDRESS
-       OR QtWatchAllVideos2_ENABLE_SANITIZER_THREAD
-       OR QtWatchAllVideos2_ENABLE_SANITIZER_LEAK)
+       OR QtWatchAllVideos_ENABLE_SANITIZER_UNDEFINED
+       OR QtWatchAllVideos_ENABLE_SANITIZER_ADDRESS
+       OR QtWatchAllVideos_ENABLE_SANITIZER_THREAD
+       OR QtWatchAllVideos_ENABLE_SANITIZER_LEAK)
       set(ENABLE_UBSAN_MINIMAL_RUNTIME FALSE)
     else()
       set(ENABLE_UBSAN_MINIMAL_RUNTIME TRUE)
     endif()
-    QtWatchAllVideos2_enable_hardening(QtWatchAllVideos2_options OFF ${ENABLE_UBSAN_MINIMAL_RUNTIME})
+    QtWatchAllVideos_enable_hardening(QtWatchAllVideos_options OFF ${ENABLE_UBSAN_MINIMAL_RUNTIME})
   endif()
 
 endmacro()

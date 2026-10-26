@@ -109,7 +109,7 @@ jobs:
         run: |
           # single-config generators take the build type at configure time, the
           # Visual Studio generator at build time
-          args=(-DQtWatchAllVideos2_ENABLE_IPO=OFF)
+          args=(-DQtWatchAllVideos_ENABLE_IPO=OFF)
           if [ "${{ matrix.generator }}" = "Ninja" ]; then
             args+=("-DCMAKE_BUILD_TYPE=${{ matrix.build_type }}")
           fi
@@ -137,7 +137,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p packaging/appdir/usr/bin
-          cp build/src/app/QtWatchAllVideos2 packaging/appdir/usr/bin/
+          cp build/src/app/QtWatchAllVideos packaging/appdir/usr/bin/
 
           base=https://github.com/linuxdeploy
           curl -sSL -o linuxdeploy \
@@ -150,36 +150,36 @@ jobs:
           export APPIMAGE_EXTRACT_AND_RUN=1
           export NO_STRIP=1
           ./linuxdeploy --appdir packaging/appdir --plugin qt \
-            --executable packaging/appdir/usr/bin/QtWatchAllVideos2 \
-            --desktop-file packaging/linux/QtWatchAllVideos2.desktop \
-            --icon-file packaging/linux/QtWatchAllVideos2.svg \
+            --executable packaging/appdir/usr/bin/QtWatchAllVideos \
+            --desktop-file packaging/linux/QtWatchAllVideos.desktop \
+            --icon-file packaging/linux/QtWatchAllVideos.svg \
             --output appimage
 
           sha=$(git rev-parse --short=7 HEAD)
-          mv QtWatchAllVideos2-x86_64.AppImage \
-             "QtWatchAllVideos2-${sha}-linux-x86_64.AppImage"
+          mv QtWatchAllVideos-x86_64.AppImage \
+             "QtWatchAllVideos-${sha}-linux-x86_64.AppImage"
 
       - name: Package (macOS .app)
         if: matrix.package && runner.os == 'macOS'
         shell: bash
         run: |
           set -euo pipefail
-          app=build/src/app/QtWatchAllVideos2.app
+          app=build/src/app/QtWatchAllVideos.app
           macdeployqt "$app" -always-overwrite
 
           sha=$(git rev-parse --short=7 HEAD)
           arch=$(uname -m)
           ditto -c -k --sequesterRsrc --keepParent "$app" \
-            "QtWatchAllVideos2-${sha}-macos-${arch}.zip"
+            "QtWatchAllVideos-${sha}-macos-${arch}.zip"
 
       - name: Package (Windows exe + Qt runtime)
         if: matrix.package && runner.os == 'Windows'
         shell: pwsh
         run: |
           $out = "build/src/app/Release"
-          windeployqt --no-translations --release "$out/QtWatchAllVideos2.exe"
+          windeployqt --no-translations --release "$out/QtWatchAllVideos.exe"
           $sha = git rev-parse --short=7 HEAD
-          Compress-Archive -Path "$out/*" -DestinationPath "QtWatchAllVideos2-$sha-windows-x64.zip"
+          Compress-Archive -Path "$out/*" -DestinationPath "QtWatchAllVideos-$sha-windows-x64.zip"
 
       - name: Upload packaged binary
         if: matrix.package && runner.os != 'Windows'
@@ -187,8 +187,8 @@ jobs:
         with:
           name: binaries-${{ runner.os }}
           path: |
-            QtWatchAllVideos2-*.AppImage
-            QtWatchAllVideos2-*.zip
+            QtWatchAllVideos-*.AppImage
+            QtWatchAllVideos-*.zip
           if-no-files-found: error
 
       - name: Upload packaged binary (Windows)
@@ -196,7 +196,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: binaries-Windows
-          path: QtWatchAllVideos2-*.zip
+          path: QtWatchAllVideos-*.zip
           if-no-files-found: error
 
   # ---- publish ----
@@ -221,7 +221,7 @@ jobs:
           merge-multiple: true
 
       # The commit sha is dropped from the published names so that
-      # releases/download/ci-latest/QtWatchAllVideos2-linux-x86_64.AppImage stays
+      # releases/download/ci-latest/QtWatchAllVideos-linux-x86_64.AppImage stays
       # a stable link; the page shows which commit it was built from.
       - name: Give the archives stable names
         run: |

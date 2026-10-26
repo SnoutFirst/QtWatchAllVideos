@@ -32,4 +32,4 @@ endif()
 
 # run vcvarsall when msvc is used
 include("${CMAKE_CURRENT_LIST_DIR}/VCEnvironment.cmake")
-QtWatchAllVideos2_run_vcvarsall()
+QtWatchAllVideos_run_vcvarsall()

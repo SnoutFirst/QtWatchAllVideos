@@ -19,22 +19,22 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 # Set the project name and language
 project(
-  QtWatchAllVideos2
+  QtWatchAllVideos
   VERSION 0.0.2
   DESCRIPTION ""
-  HOMEPAGE_URL "https://github.com/SnoutFirst/QtWatchAllVideos2"
+  HOMEPAGE_URL "https://github.com/SnoutFirst/QtWatchAllVideos"
   LANGUAGES CXX C)
 
 include(cmake/PreventInSourceBuilds.cmake)
 include(ProjectOptions.cmake)
 
 
-QtWatchAllVideos2_setup_options()
+QtWatchAllVideos_setup_options()
 
-QtWatchAllVideos2_global_options()
+QtWatchAllVideos_global_options()
 include(Dependencies.cmake)
 
-QtWatchAllVideos2_local_options()
+QtWatchAllVideos_local_options()
 
 # don't know if this should be set globally from here or not...
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
@@ -48,13 +48,13 @@ string(
             8
             GIT_SHORT_SHA)
 
-target_compile_features(QtWatchAllVideos2_options INTERFACE cxx_std_${CMAKE_CXX_STANDARD})
+target_compile_features(QtWatchAllVideos_options INTERFACE cxx_std_${CMAKE_CXX_STANDARD})
 
-add_library(QtWatchAllVideos2::QtWatchAllVideos2_options ALIAS QtWatchAllVideos2_options)
-add_library(QtWatchAllVideos2::QtWatchAllVideos2_warnings ALIAS QtWatchAllVideos2_warnings)
+add_library(QtWatchAllVideos::QtWatchAllVideos_options ALIAS QtWatchAllVideos_options)
+add_library(QtWatchAllVideos::QtWatchAllVideos_warnings ALIAS QtWatchAllVideos_warnings)
 
-#add_library(QtWatchAllVideos2::QtWatchAllVideos2_options INTERFACE IMPORTED)
-#add_library(QtWatchAllVideos2::QtWatchAllVideos2_warnings INTERFACE IMPORTED)
+#add_library(QtWatchAllVideos::QtWatchAllVideos_options INTERFACE IMPORTED)
+#add_library(QtWatchAllVideos::QtWatchAllVideos_warnings INTERFACE IMPORTED)
 
 # configure files based on CMake configuration options
 add_subdirectory(configured_files)
@@ -83,7 +83,7 @@ if(MSVC)
 endif()
 
 # set the startup project for the "play" button in MSVC
-set_property(DIRECTORY PROPERTY VS_STARTUP_PROJECT QtWatchAllVideos2)
+set_property(DIRECTORY PROPERTY VS_STARTUP_PROJECT QtWatchAllVideos)
 
 if(CMAKE_SKIP_INSTALL_RULES)
   return()
@@ -93,11 +93,11 @@ include(cmake/PackageProject.cmake)
 
 # Add other targets that you want installed here, by default we just package the one executable
 # we know we want to ship
-QtWatchAllVideos2_package_project(
+QtWatchAllVideos_package_project(
   TARGETS
-  QtWatchAllVideos2
-  QtWatchAllVideos2_options
-  QtWatchAllVideos2_warnings
+  QtWatchAllVideos
+  QtWatchAllVideos_options
+  QtWatchAllVideos_warnings
   # FIXME: this does not work! CK
   # PRIVATE_DEPENDENCIES_CONFIGURED project_options project_warnings
 )

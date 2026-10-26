@@ -9,9 +9,9 @@ project(CmakeConfigPackageTests
 if(PROJECT_IS_TOP_LEVEL OR TEST_INSTALLED_VERSION)
   enable_testing()
 
-  find_package(QtWatchAllVideos2 CONFIG REQUIRED) # for options/warnings targets
+  find_package(QtWatchAllVideos CONFIG REQUIRED) # for options/warnings targets
 
-  if(NOT TARGET QtWatchAllVideos2_options)
+  if(NOT TARGET QtWatchAllVideos_options)
     message(FATAL_ERROR "Required config package not found!")
   endif()
 endif()

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the GitHub Pages index for the packaged QtWatchAllVideos2 binaries.
+"""Build the GitHub Pages index for the packaged QtWatchAllVideos binaries.
 
 Usage: make_download_page.py <artifact-dir> <site-dir> <commit-sha> <ref-name>
 
@@ -10,9 +10,9 @@ keeps the published site a few kilobytes.
 
 Artifact names look like
 
-    QtWatchAllVideos2-1a2b3c4-linux-x86_64.AppImage
-    QtWatchAllVideos2-1a2b3c4-macos-arm64.zip
-    QtWatchAllVideos2-1a2b3c4-windows-x64.zip
+    QtWatchAllVideos-1a2b3c4-linux-x86_64.AppImage
+    QtWatchAllVideos-1a2b3c4-macos-arm64.zip
+    QtWatchAllVideos-1a2b3c4-windows-x64.zip
 
 (the "-<sha>" part is stripped before the release upload, so the download URLs
 are stable across builds).
@@ -33,10 +33,10 @@ RELEASE_TAG = "ci-latest"
 PLATFORM_ORDER = {"windows": 0, "macos": 1, "linux": 2}
 PLATFORM_LABEL = {"windows": "Windows", "macos": "macOS", "linux": "Linux"}
 PLATFORM_NOTE = {
-    "windows": "Unpack the .zip anywhere and run QtWatchAllVideos2.exe.",
-    "macos": "Unpack the .zip and drag QtWatchAllVideos2.app wherever you like. "
+    "windows": "Unpack the .zip anywhere and run QtWatchAllVideos.exe.",
+    "macos": "Unpack the .zip and drag QtWatchAllVideos.app wherever you like. "
     "It is unsigned, so the first launch needs right-click \u2192 Open "
-    "(or <code>xattr -dr com.apple.quarantine QtWatchAllVideos2.app</code>).",
+    "(or <code>xattr -dr com.apple.quarantine QtWatchAllVideos.app</code>).",
     "linux": "Make the AppImage executable and run it; nothing needs to be installed.",
 }
 
@@ -45,7 +45,7 @@ PAGE = """<!DOCTYPE html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>QtWatchAllVideos2 downloads</title>
+<title>QtWatchAllVideos downloads</title>
 <style>
   :root {{ color-scheme: dark; }}
   body {{
@@ -68,7 +68,7 @@ PAGE = """<!DOCTYPE html>
 </style>
 </head>
 <body>
-<h1>QtWatchAllVideos2</h1>
+<h1>QtWatchAllVideos</h1>
 <p class="lead">Watch all the videos in a web page, back-to-back, without the site
 chrome around them. <a href="https://github.com/{repo}">Source code</a>.</p>
 

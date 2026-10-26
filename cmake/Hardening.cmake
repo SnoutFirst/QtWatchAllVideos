@@ -1,7 +1,7 @@
 include(CheckCXXCompilerFlag)
 
 macro(
-  QtWatchAllVideos2_enable_hardening
+  QtWatchAllVideos_enable_hardening
   target
   global
   ubsan_minimal_runtime)

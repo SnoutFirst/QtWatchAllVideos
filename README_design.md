@@ -74,7 +74,7 @@ third-party libraries, but nothing is fetched at configure time right now.
 * `test/cmake/test_sanitizers_*.cmake` — regression tests for the sanitizer
   plumbing in `cmake/Sanitizers.cmake`, run through `ctest`.
 * `test/CMakeLists.txt` also verifies that the installed/exported config package
-  exposes the `QtWatchAllVideos2_options` interface target.
+  exposes the `QtWatchAllVideos_options` interface target.
 
 The template's Catch2/fuzz demo targets were removed with the rest of the sample
 code; re-adding Catch2 through CPM is a two-line change if unit tests for the

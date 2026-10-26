@@ -1,4 +1,4 @@
-function(QtWatchAllVideos2_check_libfuzzer_support var_name)
+function(QtWatchAllVideos_check_libfuzzer_support var_name)
   set(LibFuzzerTestSource
       "
 #include <cstdint>
