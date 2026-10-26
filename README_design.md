@@ -6,7 +6,7 @@ below explains *why*, so you can keep it, swap it, or turn it off.
 ## Goals
 
 1. Catch bugs at compile time, not in production.
-2. Stay portable across GCC, Clang, MSVC, and Emscripten.
+2. Stay portable across GCC, Clang, and MSVC.
 3. Work the same way as a top-level project or as a subdirectory dependency.
 
 ## Layout
@@ -38,8 +38,8 @@ on GCC/Clang. Top-level builds add `-Werror` / `/WX`. Source:
 
 ASan and UBSan are on by default for top-level GCC/Clang builds when a link
 probe shows them working. TSan, LSan, and MSan are off — they conflict with
-each other and MSan needs an instrumented standard library. Emscripten and
-MSVC skip the sanitizer pass.
+each other and MSan needs an instrumented standard library. MSVC skips the
+sanitizer pass.
 
 ## Hardening
 

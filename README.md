@@ -6,16 +6,6 @@
 
 ## About QtWatchAllVideos2
 
-
-## WebAssembly Demo
-
-Try the live WebAssembly demo:
-- Main: [https://SnoutFirst.github.io/QtWatchAllVideos2/](https://SnoutFirst.github.io/QtWatchAllVideos2/)
-- Develop: [https://SnoutFirst.github.io/QtWatchAllVideos2/develop/](https://SnoutFirst.github.io/QtWatchAllVideos2/develop/)
-
-The `main` branch deploys to the root, `develop` to `/develop/`, and tags to `/tagname/`.
-
-
 ## More Details
 
  * [Dependency Setup](README_dependencies.md)
