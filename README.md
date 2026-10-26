@@ -17,6 +17,8 @@ on every push to `main`:
 Each archive is self-contained (Qt bundled with `windeployqt` / `macdeployqt` /
 `linuxdeploy`), so nothing needs to be installed first.
 
+<!-- github-pages:start -->
+
 ## What it's for
 
 Its primary intended usage is browsing **4chan `/gif/`** threads — where a
@@ -83,6 +85,8 @@ that needs a human, and everything after that is automatic.
   later.
 - **Remembers your window** — size and position are restored on the next launch
   (maximized on first run).
+
+<!-- github-pages:end -->
 
 ## Building
 

@@ -252,8 +252,17 @@ jobs:
           prerelease: true
           make_latest: "false"
 
+      # README.md is the source of truth for the prose on the page: the part
+      # between the github-pages markers is rendered to HTML first, then the
+      # download table is built around it. The fragment lives outside site/ so
+      # it does not get published as a stray file.
+      - name: Render the README section of the site
+        run: python3 .github/scripts/make_readme_section.py README.md site-parts/readme.html
+
       - name: Generate the download page
-        run: python3 .github/scripts/make_download_page.py downloads site "${{ github.sha }}" "${{ github.ref_name }}"
+        run: >-
+          python3 .github/scripts/make_download_page.py downloads site
+          "${{ github.sha }}" "${{ github.ref_name }}" site-parts/readme.html
 
       - name: Publish to gh-pages
         uses: peaceiris/actions-gh-pages@v4

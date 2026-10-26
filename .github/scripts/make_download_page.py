@@ -2,6 +2,7 @@
 """Build the GitHub Pages index for the packaged QtWatchAllVideos binaries.
 
 Usage: make_download_page.py <artifact-dir> <site-dir> <commit-sha> <ref-name>
+                            [readme-section.html]
 
 The archives themselves are far too large for GitHub Pages (git rejects any file
 over 100 MB, and these are 150-230 MB with Qt bundled), so they live as assets of
@@ -16,6 +17,10 @@ Artifact names look like
 
 (the "-<sha>" part is stripped before the release upload, so the download URLs
 are stable across builds).
+
+The optional readme-section.html argument is the fragment produced by
+make_readme_section.py from the delimited part of README.md; it is pasted below
+the download table so the page and the README cannot drift apart.
 """
 
 from __future__ import annotations
@@ -63,8 +68,19 @@ PAGE = """<!DOCTYPE html>
   .file {{ font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .85rem;
            color: #cfcfcf; word-break: break-all; }}
   .note {{ color: #9a9a9a; font-size: .88rem; }}
+  h2 {{ font-size: 1.15rem; margin: 2.5rem 0 .5rem; letter-spacing: -.01em; }}
+  ul {{ padding-left: 1.25rem; margin: .5rem 0; }}
+  li {{ margin: .3rem 0; }}
+  strong {{ color: #fff; }}
+  code, kbd {{ background: #1c1c1c; padding: .1rem .3rem; border-radius: 4px; }}
+  kbd {{ font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+         font-size: .85em; color: #e8e8e8; border: 1px solid #333; }}
+  pre {{ background: #1c1c1c; padding: .8rem 1rem; border-radius: 6px;
+         overflow-x: auto; }}
+  pre code {{ background: none; padding: 0; }}
+  img {{ max-width: 100%; height: auto; }}
+  hr {{ border: 0; border-top: 1px solid #2a2a2a; margin: 2rem 0; }}
   footer {{ margin-top: 2.5rem; color: #7d7d7d; font-size: .85rem; }}
-  code {{ background: #1c1c1c; padding: .1rem .3rem; border-radius: 4px; }}
 </style>
 </head>
 <body>
@@ -73,7 +89,7 @@ PAGE = """<!DOCTYPE html>
 chrome around them. <a href="https://github.com/{repo}">Source code</a>.</p>
 
 {body}
-
+{readme}
 <footer>
   Built from <code>{ref}</code> at commit <code>{sha}</code> by GitHub Actions.
   The archives are attached to the
@@ -107,12 +123,24 @@ def split_name(name: str) -> tuple[str, str]:
 
 
 def main(argv: list[str]) -> int:
-    if len(argv) != 5:
+    if len(argv) not in (5, 6):
         print(__doc__, file=sys.stderr)
         return 2
 
     artifact_dir, site_dir = Path(argv[1]), Path(argv[2])
     sha, ref = argv[3], argv[4]
+
+    readme = ""
+    if len(argv) == 6:
+        try:
+            readme = Path(argv[5]).read_text(encoding="utf-8").strip()
+        except OSError as error:
+            print(f"cannot read the README section: {error}", file=sys.stderr)
+            return 1
+        if not readme:
+            print(f"{argv[5]} is empty", file=sys.stderr)
+            return 1
+        readme = f"\n{readme}\n"
 
     files = sorted(p for p in artifact_dir.rglob("*") if p.is_file())
     if not files:
@@ -157,7 +185,14 @@ def main(argv: list[str]) -> int:
 
     site_dir.mkdir(parents=True, exist_ok=True)
     (site_dir / "index.html").write_text(
-        PAGE.format(body=body, ref=html.escape(ref), sha=html.escape(sha[:7]), repo=REPO, tag=RELEASE_TAG),
+        PAGE.format(
+            body=body,
+            readme=readme,
+            ref=html.escape(ref),
+            sha=html.escape(sha[:7]),
+            repo=REPO,
+            tag=RELEASE_TAG,
+        ),
         encoding="utf-8",
     )
     print(f"wrote {site_dir / 'index.html'} with {len(rows)} download(s)")
