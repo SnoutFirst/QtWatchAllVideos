@@ -132,10 +132,17 @@ are documented in [README_building.md](README_building.md) and
 | macOS | `macdeployqt` | `QtWatchAllVideos2-<sha>-macos-<arch>.zip` |
 | Windows | `windeployqt` | `QtWatchAllVideos2-<sha>-windows-x64.zip` |
 
-`.github/workflows/pages.yml` then publishes the Release artifacts of every
-push to `main` to GitHub Pages, together with a generated index page listing the
-downloads. Tagged builds additionally attach the same archives to the GitHub
-Release.
+On every push to `main` the archives are attached to a rolling `ci-latest`
+GitHub Release with stable names (`QtWatchAllVideos2-linux-x86_64.AppImage`,
+`...-macos-arm64.zip`, `...-windows-x64.zip`), and
+`.github/scripts/make_download_page.py` regenerates the download page at
+<https://snoutfirst.github.io/QtWatchAllVideos2/> that links to them, showing the
+commit the binaries were built from.
+
+The blobs live on the Release rather than on Pages because GitHub refuses any
+file over 100 MB in a git push (these are 150–230 MB with Qt bundled), and git
+history would keep every old copy around. Tagged builds get their own Release
+with the commit-stamped archive names, so old versions stay downloadable.
 
 ## A note on provenance
 

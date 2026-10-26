@@ -3,29 +3,32 @@
 
 Usage: make_download_page.py <artifact-dir> <site-dir> <commit-sha> <ref-name>
 
-Artifact names are produced by .github/workflows/ci.yml and look like
+The archives themselves are far too large for GitHub Pages (git rejects any file
+over 100 MB, and these are 150-230 MB with Qt bundled), so they live as assets of
+the rolling "ci-latest" GitHub Release and this page only links to them. That
+keeps the published site a few kilobytes.
+
+Artifact names look like
 
     QtWatchAllVideos2-1a2b3c4-linux-x86_64.AppImage
     QtWatchAllVideos2-1a2b3c4-macos-arm64.zip
     QtWatchAllVideos2-1a2b3c4-windows-x64.zip
 
-The files are copied to <site-dir>/downloads/ verbatim, and <site-dir>/index.html
-links to them.
+(the "-<sha>" part is stripped before the release upload, so the download URLs
+are stable across builds).
 """
 
 from __future__ import annotations
 
 import html
-import shutil
 import sys
 from pathlib import Path
 
+REPO = "SnoutFirst/QtWatchAllVideos2"
+RELEASE_TAG = "ci-latest"
+
 PLATFORM_ORDER = {"windows": 0, "macos": 1, "linux": 2}
-PLATFORM_LABEL = {
-    "windows": "Windows",
-    "macos": "macOS",
-    "linux": "Linux",
-}
+PLATFORM_LABEL = {"windows": "Windows", "macos": "macOS", "linux": "Linux"}
 PLATFORM_NOTE = {
     "windows": "Unpack the .zip anywhere and run QtWatchAllVideos2.exe.",
     "macos": "Unpack the .zip and drag QtWatchAllVideos2.app wherever you like. "
@@ -70,8 +73,10 @@ chrome around them. <a href="https://github.com/{repo}">Source code</a>.</p>
 
 <footer>
   Built from <code>{ref}</code> at commit <code>{sha}</code> by GitHub Actions.
-  Older builds are kept as workflow artifacts and, for tagged versions, as
-  GitHub Releases.
+  The archives are attached to the
+  <a href="https://github.com/{repo}/releases/tag/{tag}">rolling CI release</a>
+  because GitHub Pages refuses files over 100&nbsp;MB. Older builds are kept as
+  workflow artifacts, and tagged versions also get a GitHub Release each.
 </footer>
 </body>
 </html>
@@ -87,12 +92,13 @@ def human_size(num: int) -> str:
     return f"{value:.1f} GiB"
 
 
-def parse(name: str) -> tuple[str, str]:
+def split_name(name: str) -> tuple[str, str]:
     """Return (platform, arch) for an artifact name, or ("", "") if unknown."""
-    parts = name.rsplit(".", 1)[0].split("-")
-    for part in parts:
+    stem = name.rsplit(".", 1)[0]
+    parts = stem.split("-")
+    for index, part in enumerate(parts):
         if part in PLATFORM_ORDER:
-            arch = parts[parts.index(part) + 1] if parts.index(part) + 1 < len(parts) else ""
+            arch = parts[index + 1] if index + 1 < len(parts) else ""
             return part, arch
     return "", ""
 
@@ -110,30 +116,28 @@ def main(argv: list[str]) -> int:
         print(f"no artifacts found in {artifact_dir}", file=sys.stderr)
         return 1
 
-    downloads = site_dir / "downloads"
-    downloads.mkdir(parents=True, exist_ok=True)
-
     rows = []
     for path in files:
-        platform, arch = parse(path.name)
+        platform, arch = split_name(path.name)
         if not platform:
             print(f"skipping unrecognised artifact {path.name}", file=sys.stderr)
             continue
-        shutil.copy2(path, downloads / path.name)
         rows.append((PLATFORM_ORDER[platform], platform, arch, path))
 
     if not rows:
         print("no recognised artifacts to publish", file=sys.stderr)
         return 1
 
-    rows.sort(key=lambda r: r[0])
+    rows.sort(key=lambda row: row[0])
+    download_base = f"https://github.com/{REPO}/releases/download/{RELEASE_TAG}"
     table_rows = "\n".join(
         "  <tr><td><strong>{label}</strong><br><span class=\"note\">{arch}</span></td>"
-        "<td><a class=\"file\" href=\"downloads/{name}\">{name}</a><br>"
+        "<td><a class=\"file\" href=\"{url}\">{name}</a><br>"
         "<span class=\"note\">{size}</span></td>"
         "<td class=\"note\">{note}</td></tr>".format(
             label=PLATFORM_LABEL[platform],
             arch=html.escape(arch),
+            url=html.escape(f"{download_base}/{path.name}"),
             name=html.escape(path.name),
             size=human_size(path.stat().st_size),
             note=PLATFORM_NOTE[platform],
@@ -148,9 +152,9 @@ def main(argv: list[str]) -> int:
         "</table>"
     )
 
-    repo = "SnoutFirst/QtWatchAllVideos2"
+    site_dir.mkdir(parents=True, exist_ok=True)
     (site_dir / "index.html").write_text(
-        PAGE.format(body=body, ref=html.escape(ref), sha=html.escape(sha[:7]), repo=repo),
+        PAGE.format(body=body, ref=html.escape(ref), sha=html.escape(sha[:7]), repo=REPO, tag=RELEASE_TAG),
         encoding="utf-8",
     )
     print(f"wrote {site_dir / 'index.html'} with {len(rows)} download(s)")

@@ -202,7 +202,7 @@ jobs:
   # ---- publish ----
 
   pages:
-    name: Publish binaries to GitHub Pages
+    name: Publish downloads page and rolling CI release
     needs: build
     if: >-
       github.event_name == 'push' &&
@@ -220,6 +220,38 @@ jobs:
           path: downloads
           merge-multiple: true
 
+      # The commit sha is dropped from the published names so that
+      # releases/download/ci-latest/QtWatchAllVideos2-linux-x86_64.AppImage stays
+      # a stable link; the page shows which commit it was built from.
+      - name: Give the archives stable names
+        run: |
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+
+          for path in sorted(Path("downloads").iterdir()):
+              if path.is_file():
+                  stable = re.sub(r"-[0-9a-f]{7}(?=-)", "", path.name)
+                  if stable != path.name:
+                      path.rename(path.with_name(stable))
+                      print(f"{path.name} -> {stable}")
+          PY
+
+      - name: Update the rolling CI release
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ci-latest
+          name: Latest CI build
+          body: |
+            Automatically published from the latest successful build of `main`
+            (commit ${{ github.sha }}).
+
+            The download page lives at
+            https://snoutfirst.github.io/QtWatchAllVideos2/
+          files: downloads/*
+          prerelease: true
+          make_latest: "false"
+
       - name: Generate the download page
         run: python3 .github/scripts/make_download_page.py downloads site "${{ github.sha }}" "${{ github.ref_name }}"
 
@@ -228,8 +260,8 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./site
-          # a single orphan commit: the ~350 MB of binaries must not accumulate
-          # in the branch history on every push
+          # a single orphan commit: the page is regenerated from scratch on
+          # every push, there is nothing to keep in history
           force_orphan: true
           user_name: SnoutFirst
           user_email: snoutfirst@protonmail.com
