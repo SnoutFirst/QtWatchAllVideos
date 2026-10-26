@@ -33,7 +33,6 @@ QtWatchAllVideos2_setup_options()
 
 QtWatchAllVideos2_global_options()
 include(Dependencies.cmake)
-QtWatchAllVideos2_setup_dependencies()
 
 QtWatchAllVideos2_local_options()
 
