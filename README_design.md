@@ -62,18 +62,23 @@ IPO/LTO is on by default at top level. It is gated through
 
 ## Dependencies
 
-[CPM](https://github.com/cpm-cmake/CPM.cmake) fetches sources at configure
-time. Each package is gated by `if(NOT TARGET ...)`, so a parent project can
-supply its own version. `SYSTEM YES` silences warnings from third-party
-headers. Default set: fmt, spdlog, Catch2, CLI11, FTXUI, lefticus/tools.
+Qt 6 (`Widgets`, `Network`, `Multimedia`, `MultimediaWidgets`,
+`WebEngineWidgets`) is a system dependency found with `find_package(Qt6 ...)` in
+`Dependencies.cmake`; CI installs it from apt, Homebrew or `aqtinstall`. A parent
+project that already found Qt is respected via `if(NOT TARGET Qt6::Widgets)`.
+[CPM](https://github.com/cpm-cmake/CPM.cmake) is still wired in for future
+third-party libraries, but nothing is fetched at configure time right now.
 
 ## Testing
 
-* `test/tests.cpp` — Catch2 unit tests.
-* `test/constexpr_tests.cpp` — the same checks at compile time, so bugs
-  become build errors.
-* `fuzz_test/` — libFuzzer harness, auto-enabled when ASan/TSan/UBSan and
-  libFuzzer are all available.
+* `test/cmake/test_sanitizers_*.cmake` — regression tests for the sanitizer
+  plumbing in `cmake/Sanitizers.cmake`, run through `ctest`.
+* `test/CMakeLists.txt` also verifies that the installed/exported config package
+  exposes the `QtWatchAllVideos2_options` interface target.
+
+The template's Catch2/fuzz demo targets were removed with the rest of the sample
+code; re-adding Catch2 through CPM is a two-line change if unit tests for the
+Qt code are wanted.
 
 ## Targets and packaging
 

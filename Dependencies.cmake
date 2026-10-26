@@ -1,83 +1,30 @@
 include(cmake/CPM.cmake)
 
-# Done as a function so that updates to variables like
-# CMAKE_CXX_FLAGS don't propagate out to other
-# targets
+# Qt is not fetched: it is a system dependency, provided by the distribution
+# (qt6-base-dev / qt6-multimedia-dev / qt6-webengine-dev on Debian and Ubuntu),
+# by Homebrew on macOS, or by the Qt online installer / aqtinstall on Windows.
+# CPM stays available for future third-party dependencies.
 function(QtWatchAllVideos2_setup_dependencies)
 
-  # For each dependency, see if it's
-  # already been provided to us by a parent project
-
-  if(NOT TARGET fmtlib::fmtlib)
-    cpmaddpackage(
-      NAME
-      fmt
-      GITHUB_REPOSITORY
-      "fmtlib/fmt"
-      GIT_TAG
-      "12.1.0"
-      SYSTEM
-      YES)
+  # Allow a parent project to provide Qt itself
+  if(NOT TARGET Qt6::Widgets)
+    find_package(
+      Qt6
+      REQUIRED
+      COMPONENTS Widgets
+                 Network
+                 Multimedia
+                 MultimediaWidgets
+                 WebEngineWidgets)
   endif()
 
-  if(NOT TARGET spdlog::spdlog)
-    cpmaddpackage(
-      NAME
-      spdlog
-      VERSION
-      1.17.0
-      GITHUB_REPOSITORY
-      "gabime/spdlog"
-      SYSTEM
-      YES
-      OPTIONS
-      "SPDLOG_FMT_EXTERNAL ON")
-  endif()
-
-  if(NOT TARGET Catch2::Catch2WithMain)
-    cpmaddpackage(
-      NAME
-      Catch2
-      VERSION
-      3.12.0
-      GITHUB_REPOSITORY
-      "catchorg/Catch2"
-      SYSTEM
-      YES)
-  endif()
-
-  if(NOT TARGET CLI11::CLI11)
-    cpmaddpackage(
-      NAME
-      CLI11
-      VERSION
-      2.6.1
-      GITHUB_REPOSITORY
-      "CLIUtils/CLI11"
-      SYSTEM
-      YES)
-  endif()
-
-  if(NOT TARGET ftxui::screen)
-    cpmaddpackage(
-      NAME
-      FTXUI
-      VERSION
-      6.1.9
-      GITHUB_REPOSITORY
-      "ArthurSonzogni/FTXUI"
-      SYSTEM
-      YES)
-  endif()
-
-  if(NOT TARGET tools::tools)
-    cpmaddpackage(
-      NAME
-      tools
-      GITHUB_REPOSITORY
-      "lefticus/tools"
-      GIT_TAG
-      "main")
-  endif()
+  # Qt6::MultimediaWidgets is only needed for the QVideoWidget fallback path and
+  # Qt6::WebEngineWidgets for the page scraper; both must be present. Fail loudly
+  # rather than half-linking.
+  foreach(module Widgets Network Multimedia MultimediaWidgets WebEngineWidgets)
+    if(NOT TARGET Qt6::${module})
+      message(FATAL_ERROR "Qt6::${module} is required but was not found")
+    endif()
+  endforeach()
 
 endfunction()

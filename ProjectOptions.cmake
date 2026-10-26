@@ -110,15 +110,6 @@ macro(QtWatchAllVideos2_setup_options)
       QtWatchAllVideos2_ENABLE_CACHE)
   endif()
 
-  QtWatchAllVideos2_check_libfuzzer_support(LIBFUZZER_SUPPORTED)
-  if(LIBFUZZER_SUPPORTED AND (QtWatchAllVideos2_ENABLE_SANITIZER_ADDRESS OR QtWatchAllVideos2_ENABLE_SANITIZER_THREAD OR QtWatchAllVideos2_ENABLE_SANITIZER_UNDEFINED))
-    set(DEFAULT_FUZZER ON)
-  else()
-    set(DEFAULT_FUZZER OFF)
-  endif()
-
-  option(QtWatchAllVideos2_BUILD_FUZZ_TESTS "Enable fuzz testing executable" ${DEFAULT_FUZZER})
-
 endmacro()
 
 macro(QtWatchAllVideos2_global_options)

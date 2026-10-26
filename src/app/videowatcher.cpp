@@ -118,6 +118,10 @@ void VideoWatcher::createUi()
     m_GifLabelProxy ->setVisible(false);
 
     m_Player = new QMediaPlayer(this);
+    // Qt 6 moved volume/mute onto QAudioOutput; without one a QMediaPlayer has no
+    // audio at all, and QMediaPlayer::setMuted/isMuted no longer exist.
+    m_AudioOutput = new QAudioOutput(this);
+    m_Player->setAudioOutput(m_AudioOutput);
     m_Player->setVideoOutput(m_VideoGraphicsItem);
 
     m_GraphicsView = new MyGraphicsView(m_GraphicsScene);
@@ -321,7 +325,7 @@ void VideoWatcher::seekBy(qint64 deltaMs)
 
     // A video that has run to its end sits in StoppedState on its last frame; seeking
     // back into it should resume playback rather than leave a frozen picture.
-    if(m_Player->state() == QMediaPlayer::StoppedState)
+    if(m_Player->playbackState() == QMediaPlayer::StoppedState)
         m_Player->play();
 }
 
@@ -521,9 +525,9 @@ void VideoWatcher::loadLastPosition()
     QVariantMap value = m_Settings.value(key).toMap();
     if(!value.contains("videoUrl"))
         return;
-    int index = m_VideoUrls.indexOf(value["videoUrl"].toString());
+    const qsizetype index = m_VideoUrls.indexOf(value["videoUrl"].toString());
     if(index >= 0)
-        m_CurrentIndex = index;
+        m_CurrentIndex = static_cast<int>(index);
 }
 
 void VideoWatcher::toggleFullscreen()
@@ -565,7 +569,7 @@ bool VideoWatcher::handleKey(QKeyEvent *e)
 {
     switch(e->key())
     {
-    case Qt::Key_M: m_Player->setMuted(!m_Player->isMuted()); return true;
+    case Qt::Key_M: m_AudioOutput->setMuted(!m_AudioOutput->isMuted()); return true;
     case Qt::Key_Space:
         togglePlayPause();
         return true;
@@ -627,6 +631,7 @@ void VideoWatcher::resizeEvent(QResizeEvent *e)
 void VideoWatcher::closeEvent(QCloseEvent *event)
 {
     saveWindowSizeAndPosition();
+    QWidget::closeEvent(event);
 }
 void VideoWatcher::resizeGraphicsItems()
 {
@@ -641,7 +646,7 @@ void VideoWatcher::resizeGraphicsItems()
     m_GifLabelProxy->setPos(0, 0);
 
     const int panelHeight = m_ControlsPanel->sizeHint().height();
-    m_ControlsPanel->setFixedWidth(viewSize.width());
+    m_ControlsPanel->setFixedWidth(static_cast<int>(viewSize.width()));
     m_ControlsPanelProxy->setPos(0, viewSize.height() - panelHeight);
 }
 void VideoWatcher::saveWindowSizeAndPosition()
@@ -673,7 +678,7 @@ void VideoWatcher::togglePlayPause()
     }
     else if(m_VideoGraphicsItem->isVisible() && m_Player)
     {
-        switch(m_Player->state())
+        switch(m_Player->playbackState())
         {
         case QMediaPlayer::StoppedState:
             [[fallthrough]];

@@ -15,6 +15,7 @@
 #include <QWebEnginePage>
 #include <QVideoWidget>
 #include <QMediaPlayer>
+#include <QAudioOutput>
 #include <QTimer>
 #include <QRegularExpression>
 #include <QKeyEvent>
@@ -53,7 +54,7 @@ protected:
          if(onMouseMoved)
              onMouseMoved();
      }
-     void keyPressEvent(QKeyEvent *event)
+     void keyPressEvent(QKeyEvent *event) override
      {
          // A signal-slot connection cannot carry the handler's bool back, so "handled" is
          // reported by the handler accepting the event instead. Clear the accepted flag
@@ -99,6 +100,7 @@ private:
     QTimer   m_MouseIdleTimer;
 
     QMediaPlayer   *m_Player{};
+    QAudioOutput   *m_AudioOutput{};
     QLabel         *m_GifLabel{};
     QMovie         *m_GifMovie = nullptr;
     QPixmap        m_GifCurrentFrame{};

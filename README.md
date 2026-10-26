@@ -1,4 +1,4 @@
-# QtWatchAllVideos
+# QtWatchAllVideos2
 
 A tiny Qt desktop app that watches **all** the videos in a web page, one after
 another, without any of the surrounding site chrome.
@@ -6,6 +6,16 @@ another, without any of the surrounding site chrome.
 Paste a thread URL, click **Watch All Videos**, and it scrapes the page for
 video links and `<video>` sources, then plays them back-to-back in a clean black
 viewer with a minimal overlay of controls.
+
+## Download
+
+Prebuilt Windows, macOS and Linux binaries are published to GitHub Pages by CI
+on every push to `main`:
+
+**<https://snoutfirst.github.io/QtWatchAllVideos2/>**
+
+Each archive is self-contained (Qt bundled with `windeployqt` / `macdeployqt` /
+`linuxdeploy`), so nothing needs to be installed first.
 
 ## What it's for
 
@@ -76,20 +86,58 @@ that needs a human, and everything after that is automatic.
 
 ## Building
 
-Requires Qt 5 or Qt 6 with the **Widgets**, **Network**, **Multimedia**,
-**MultimediaWidgets** and **WebEngineWidgets** modules, and CMake ≥ 3.5:
+The project is built with CMake (≥ 3.29) and needs **Qt 6** with the
+**Widgets**, **Network**, **Multimedia**, **MultimediaWidgets** and
+**WebEngineWidgets** modules:
 
 ```sh
-cmake -B build
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build
-./build/QtWatchAllVideos
+ctest --test-dir build
 ```
+
+Run it with `./build/src/app/QtWatchAllVideos2` (`build\src\app\Release\
+QtWatchAllVideos2.exe` for a multi-config build on Windows, or
+`build/src/app/QtWatchAllVideos2.app` on macOS).
+
+Installing Qt:
+
+- **Debian / Ubuntu** — `qt6-base-dev qt6-multimedia-dev qt6-webengine-dev`
+- **Fedora** — `qt6-qtbase-devel qt6-qtmultimedia-devel qt6-qtwebengine-devel`
+- **macOS** — `brew install qt` (Homebrew's `qt` formula includes QtWebEngine)
+- **Windows** — the Qt online installer, or `aqtinstall`
+  (`aqt install-qt windows desktop 6.8.3 win64_msvc2022_64 -m qtmultimedia
+  qtwebengine qtwebchannel qtpositioning`)
+
+CMake presets for the common compiler/platform combinations live in
+`CMakePresets.json`; the template's build options (`QtWatchAllVideos2_ENABLE_*`)
+are documented in [README_building.md](README_building.md) and
+[README_design.md](README_design.md).
+
+## Continuous integration and releases
+
+`.github/workflows/ci.yml` builds and tests Debug + Release on
+`ubuntu-latest` (GCC and Clang), `macos-latest` (Apple Clang) and
+`windows-latest` (MSVC), then packages each binary:
+
+| Platform | Packaged by | Archive |
+| --- | --- | --- |
+| Linux | `linuxdeploy` + `linuxdeploy-plugin-qt` | `QtWatchAllVideos2-<sha>-linux-x86_64.AppImage` |
+| macOS | `macdeployqt` | `QtWatchAllVideos2-<sha>-macos-<arch>.zip` |
+| Windows | `windeployqt` | `QtWatchAllVideos2-<sha>-windows-x64.zip` |
+
+`.github/workflows/pages.yml` then publishes the Release artifacts of every
+push to `main` to GitHub Pages, together with a generated index page listing the
+downloads. Tagged builds additionally attach the same archives to the GitHub
+Release.
 
 ## A note on provenance
 
-This project was mostly a copy/paste project from ChatGPT web. It works, and
-it's small enough to read, but don't expect the architecture to be a textbook
-example.
+This project was mostly a copy/paste project from ChatGPT web — and the Qt code
+still is; only the project scaffolding around it (CMake, CI, packaging) comes
+from [`cpp-best-practices/cmake_template`](https://github.com/cpp-best-practices/cmake_template).
+It works, and it's small enough to read, but don't expect the architecture to be
+a textbook example.
 
 ## Patches welcome
 
